@@ -88,20 +88,31 @@
     var pe = $('ovTotalProfit'); pe.textContent = (profit>=0?'+':'')+fmtMoney(profit); pe.className = 'ov-value '+(profit>=0?'green':'red');
     var re = $('ovProfitRate'); re.textContent = fmtPercent(rate); re.className = 'ov-value '+(rate>=0?'green':'red');
 
-    // 交易列表
+    // 交易列表 - 按日期汇总
     var list = $('tradeList');
     if (trades.length===0) {
       list.innerHTML = '<div class="empty-state">暂无交易记录,点击右下角 + 添加</div>';
     } else {
+      // 按日期分组汇总
+      var byDate = {};
+      trades.forEach(function(t){
+        if (!byDate[t.date]) byDate[t.date] = { date: t.date, weight: 0, cost: 0, ids: [] };
+        byDate[t.date].weight += t.weight;
+        byDate[t.date].cost += t.weight * t.costPrice;
+        byDate[t.date].ids.push(t.id);
+      });
+      var dates = Object.keys(byDate).sort().reverse();
       list.innerHTML = '';
-      trades.slice().reverse().forEach(function(t){
-        var profit = cp>0 ? (cp-t.costPrice)*t.weight : 0;
+      dates.forEach(function(d){
+        var g = byDate[d];
+        var avgPrice = g.weight > 0 ? g.cost / g.weight : 0;
+        var profit = cp > 0 ? (cp - avgPrice) * g.weight : 0;
         var c = document.createElement('div'); c.className='trade-card';
-        c.innerHTML = '<div class="trade-date">'+t.date+'</div>'+
-          '<div class="trade-weight">'+fmtWeight(t.weight)+'</div>'+
-          '<div class="trade-cost">'+fmtMoney(t.weight*t.costPrice)+'</div>'+
+        c.innerHTML = '<div class="trade-date">'+g.date+'</div>'+
+          '<div class="trade-weight">'+fmtWeight(g.weight)+'</div>'+
+          '<div class="trade-cost">'+fmtMoney(g.cost)+'</div>'+
           '<div class="trade-profit" style="color:'+(profit>=0?'var(--green)':'var(--red)')+'">'+(profit>=0?'+':'')+fmtMoney(profit)+'</div>'+
-          '<span class="trade-del" data-id="'+t.id+'">×</span>';
+          '<span class="trade-del" data-date="'+g.date+'">×</span>';
         list.appendChild(c);
       });
     }
@@ -128,12 +139,12 @@
     overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.classList.remove('show'); });
   })();
 
-  // 黄金：删除
+  // 黄金：删除(按日期删除当天所有记录)
   $('tradeList').addEventListener('click', function(e){
     if (e.target.classList.contains('trade-del')) {
-      var id = parseInt(e.target.dataset.id);
-      if (confirm('确定删除?')) {
-        var t = loadGoldTrades().filter(function(x){return x.id!==id});
+      var date = e.target.dataset.date;
+      if (confirm('确定删除 '+date+' 的所有记录?')) {
+        var t = loadGoldTrades().filter(function(x){return x.date !== date});
         saveGoldTrades(t); refreshGold();
       }
     }
