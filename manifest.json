@@ -1,7 +1,7 @@
 {
-  "name": "工作台 - 账目记录",
+  "name": "工作台 - 黄金交易",
   "short_name": "工作台",
-  "description": "账目记录工作台 - 按日期/账号/项目统计",
+  "description": "黄金交易工作台 - 实时金价、交易记录、利润统计",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
