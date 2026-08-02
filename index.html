@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#ffffff">
+  <title>工作台 - 账目记录</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 顶部栏 -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo-icon">📊</div>
+        <div class="logo-text">
+          <div class="logo-title">工作台</div>
+          <div class="logo-sub">菜鸟 · 账目记录</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="user-badge" id="userBadge">
+          <span class="user-icon">💎</span>
+          <span class="user-name">珠珠</span>
+        </div>
+        <div class="user-badge active" id="currentUserBadge">
+          <span class="user-icon">🐦</span>
+          <span class="user-name">菜鸟</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 总览卡片 -->
+    <section class="overview-card">
+      <div class="overview-title">📈 总览</div>
+      <div class="overview-grid">
+        <div class="ov-item">
+          <div class="ov-label">总金额</div>
+          <div class="ov-value blue" id="ovTotalAmount">¥0.00</div>
+        </div>
+        <div class="ov-item">
+          <div class="ov-label">总笔数</div>
+          <div class="ov-value dark" id="ovTotalCount">0</div>
+        </div>
+        <div class="ov-item">
+          <div class="ov-label">账号数</div>
+          <div class="ov-value orange" id="ovAccountCount">0</div>
+        </div>
+        <div class="ov-item">
+          <div class="ov-label">项目数</div>
+          <div class="ov-value dark" id="ovProjectCount">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 标签切换 -->
+    <nav class="tab-bar">
+      <button class="tab" data-tab="records">
+        <span class="tab-icon">📝</span>
+        <span class="tab-text">记录</span>
+      </button>
+      <button class="tab active" data-tab="bydate">
+        <span class="tab-icon">📅</span>
+        <span class="tab-text">按日期</span>
+      </button>
+      <button class="tab" data-tab="byaccount">
+        <span class="tab-icon">👥</span>
+        <span class="tab-text">按账号</span>
+      </button>
+      <button class="tab" data-tab="byproject">
+        <span class="tab-icon">📁</span>
+        <span class="tab-text">按项目</span>
+      </button>
+    </nav>
+
+    <!-- 内容区 -->
+    <main class="content">
+
+      <!-- ===== 记录列表 ===== -->
+      <section class="panel" id="panel-records">
+        <div class="section-header">
+          <h3>📋 所有记录</h3>
+          <button class="btn-primary" id="btnAddRecord">+ 新增</button>
+        </div>
+        <div id="recordsList" class="data-list"></div>
+      </section>
+
+      <!-- ===== 按日期 ===== -->
+      <section class="panel active" id="panel-bydate">
+        <div class="data-table">
+          <div class="dt-header">
+            <span>日期</span>
+            <span>笔数</span>
+            <span>金额</span>
+          </div>
+          <div id="byDateBody" class="dt-body"></div>
+          <div class="dt-footer">
+            <span>合计</span>
+            <span id="byDateTotalCount">0</span>
+            <span id="byDateTotalAmount">¥0.00</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 按账号 ===== -->
+      <section class="panel" id="panel-byaccount">
+        <div class="data-table">
+          <div class="dt-header">
+            <span>账号</span>
+            <span>笔数</span>
+            <span>金额</span>
+          </div>
+          <div id="byAccountBody" class="dt-body"></div>
+          <div class="dt-footer">
+            <span>合计</span>
+            <span id="byAccountTotalCount">0</span>
+            <span id="byAccountTotalAmount">¥0.00</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 按项目 ===== -->
+      <section class="panel" id="panel-byproject">
+        <div class="data-table">
+          <div class="dt-header">
+            <span>项目</span>
+            <span>笔数</span>
+            <span>金额</span>
+          </div>
+          <div id="byProjectBody" class="dt-body"></div>
+          <div class="dt-footer">
+            <span>合计</span>
+            <span id="byProjectTotalCount">0</span>
+            <span id="byProjectTotalAmount">¥0.00</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 新增记录弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>新增记录</h3>
+          <button class="modal-close" id="modalClose">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label>日期</label>
+            <input type="date" id="recDate" class="form-input">
+          </div>
+          <div class="form-row">
+            <label>账号</label>
+            <input type="text" id="recAccount" class="form-input" placeholder="如 134">
+          </div>
+          <div class="form-row">
+            <label>项目</label>
+            <input type="text" id="recProject" class="form-input" placeholder="如 快递">
+          </div>
+          <div class="form-row">
+            <label>金额 (元)</label>
+            <input type="number" id="recAmount" class="form-input" placeholder="如 57.86" step="0.01">
+          </div>
+          <div class="form-row">
+            <label>备注</label>
+            <input type="text" id="recNote" class="form-input" placeholder="可选">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" id="btnCancel">取消</button>
+          <button class="btn-primary" id="btnSave">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部 -->
+    <footer class="footer">
+      <span>工作台 v1.0</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
