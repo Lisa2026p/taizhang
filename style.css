@@ -241,6 +241,27 @@ html, body {
   cursor: pointer;
 }
 
+.btn-outline {
+  padding: 8px 12px;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-outline:active {
+  background: #eff6ff;
+}
+
+.btn-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
 /* ===== 数据表格 ===== */
 .data-table {
   background: var(--card-bg);
