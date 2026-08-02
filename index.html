@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#ffffff">
-  <title>工作台 - 黄金交易</title>
+  <title>工作台</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,109 +21,151 @@
       </div>
       <div class="header-right">
         <button class="user-badge active" id="btnUserZhuzhu">
-          <span class="user-icon">💎</span>
-          <span class="user-name">珠珠</span>
+          <span class="user-icon">💎</span><span class="user-name">珠珠</span>
         </button>
         <button class="user-badge" id="btnUserCainiao">
-          <span class="user-icon">🐦</span>
-          <span class="user-name">菜鸟</span>
+          <span class="user-icon">🐦</span><span class="user-name">菜鸟</span>
         </button>
       </div>
     </header>
 
-    <!-- 实时金价 -->
-    <section class="gold-price-card">
-      <div class="gp-header">
-        <span class="gp-label">实时金价</span>
-        <button class="gp-refresh" id="btnRefreshPrice">刷新</button>
-      </div>
-      <div class="gp-value">
-        <span id="goldPrice">--</span>
-        <span class="gp-unit">元/克</span>
-      </div>
-      <div class="gp-info">
-        <span id="goldChange">涨跌 --</span>
-        <span id="goldTime">--</span>
-      </div>
-    </section>
+    <!-- ==================== 珠珠：黄金交易 ==================== -->
+    <div id="viewZhuzhu" class="user-view active">
+      <!-- 实时金价 -->
+      <section class="gold-price-card">
+        <div class="gp-header">
+          <span class="gp-label">实时金价</span>
+          <button class="gp-refresh" id="btnRefreshPrice">刷新</button>
+        </div>
+        <div class="gp-value">
+          <span id="goldPrice">--</span><span class="gp-unit">元/克</span>
+        </div>
+        <div class="gp-info"><span id="goldTime">点击刷新获取金价</span></div>
+      </section>
 
-    <!-- 总览 -->
-    <section class="overview-card">
-      <div class="overview-title">📈 总览</div>
-      <div class="overview-grid">
-        <div class="ov-item">
-          <div class="ov-label">总克重</div>
-          <div class="ov-value orange" id="ovTotalWeight">0g</div>
+      <!-- 总览 -->
+      <section class="overview-card">
+        <div class="overview-title">📈 总览</div>
+        <div class="overview-grid">
+          <div class="ov-item"><div class="ov-label">总克重</div><div class="ov-value orange" id="ovTotalWeight">0g</div></div>
+          <div class="ov-item"><div class="ov-label">总成本</div><div class="ov-value blue" id="ovTotalCost">¥0.00</div></div>
+          <div class="ov-item"><div class="ov-label">总利润</div><div class="ov-value green" id="ovTotalProfit">+¥0.00</div></div>
+          <div class="ov-item"><div class="ov-label">利润率</div><div class="ov-value green" id="ovProfitRate">+0.00%</div></div>
         </div>
-        <div class="ov-item">
-          <div class="ov-label">总成本</div>
-          <div class="ov-value blue" id="ovTotalCost">¥0.00</div>
+      </section>
+
+      <!-- 交易记录 -->
+      <section class="trade-section">
+        <div class="section-header">
+          <h3>📝 交易记录</h3>
+          <div class="btn-group">
+            <button class="btn-outline" id="btnGoldExport">导出</button>
+            <input type="file" id="goldImportFile" accept=".json" style="display:none">
+            <button class="btn-outline" id="btnGoldImport">导入</button>
+          </div>
         </div>
-        <div class="ov-item">
-          <div class="ov-label">总利润</div>
-          <div class="ov-value green" id="ovTotalProfit">+¥0.00</div>
+        <div id="tradeList" class="trade-list"></div>
+      </section>
+      <button class="fab" id="btnAddGold">+</button>
+    </div>
+
+    <!-- ==================== 菜鸟：账目记录 ==================== -->
+    <div id="viewCainiao" class="user-view">
+      <!-- 总览 -->
+      <section class="overview-card">
+        <div class="overview-title">📈 总览</div>
+        <div class="overview-grid">
+          <div class="ov-item"><div class="ov-label">总金额</div><div class="ov-value blue" id="cTotalAmount">¥0.00</div></div>
+          <div class="ov-item"><div class="ov-label">总笔数</div><div class="ov-value dark" id="cTotalCount">0</div></div>
+          <div class="ov-item"><div class="ov-label">账号数</div><div class="ov-value orange" id="cAccountCount">0</div></div>
+          <div class="ov-item"><div class="ov-label">项目数</div><div class="ov-value dark" id="cProjectCount">0</div></div>
         </div>
-        <div class="ov-item">
-          <div class="ov-label">利润率</div>
-          <div class="ov-value green" id="ovProfitRate">+0.00%</div>
+      </section>
+
+      <!-- 标签切换 -->
+      <nav class="tab-bar">
+        <button class="tab active" data-tab="cByDate">📅 按日期</button>
+        <button class="tab" data-tab="cByAccount">👥 按账号</button>
+        <button class="tab" data-tab="cByProject">📁 按项目</button>
+        <button class="tab" data-tab="cRecords">📋 记录</button>
+      </nav>
+
+      <!-- 按日期 -->
+      <div class="c-panel active" id="cByDate">
+        <div class="data-table">
+          <div class="dt-header"><span>日期</span><span>笔数</span><span>金额</span></div>
+          <div id="cByDateBody" class="dt-body"></div>
+          <div class="dt-footer"><span>合计</span><span id="cByDateCount">0</span><span id="cByDateAmount">¥0.00</span></div>
         </div>
       </div>
-    </section>
-
-    <!-- 交易记录 -->
-    <section class="trade-section">
-      <div class="section-header">
-        <h3>📝 交易记录</h3>
-        <div class="btn-group">
-          <button class="btn-outline" id="btnExport">导出</button>
-          <input type="file" id="importFileInput" accept=".json" style="display:none">
-          <button class="btn-outline" id="btnImport">导入</button>
+      <!-- 按账号 -->
+      <div class="c-panel" id="cByAccount">
+        <div class="data-table">
+          <div class="dt-header"><span>账号</span><span>笔数</span><span>金额</span></div>
+          <div id="cByAccountBody" class="dt-body"></div>
+          <div class="dt-footer"><span>合计</span><span id="cByAccountCount">0</span><span id="cByAccountAmount">¥0.00</span></div>
         </div>
       </div>
-      <div class="trade-list" id="tradeList"></div>
-    </section>
+      <!-- 按项目 -->
+      <div class="c-panel" id="cByProject">
+        <div class="data-table">
+          <div class="dt-header"><span>项目</span><span>笔数</span><span>金额</span></div>
+          <div id="cByProjectBody" class="dt-body"></div>
+          <div class="dt-footer"><span>合计</span><span id="cByProjectCount">0</span><span id="cByProjectAmount">¥0.00</span></div>
+        </div>
+      </div>
+      <!-- 记录 -->
+      <div class="c-panel" id="cRecords">
+        <div class="section-header">
+          <h3>📋 所有记录</h3>
+          <div class="btn-group">
+            <button class="btn-outline" id="btnCExport">导出</button>
+            <input type="file" id="cImportFile" accept=".json" style="display:none">
+            <button class="btn-outline" id="btnCImport">导入</button>
+            <button class="btn-primary" id="btnAddRecord">+ 新增</button>
+          </div>
+        </div>
+        <div id="cRecordsList" class="data-list"></div>
+      </div>
+    </div>
 
-    <!-- 悬浮新增按钮 -->
-    <button class="fab" id="btnAddTrade">+</button>
-
-    <!-- 新增交易弹窗 -->
-    <div class="modal-overlay" id="modalOverlay">
+    <!-- ==================== 弹窗：黄金交易 ==================== -->
+    <div class="modal-overlay" id="goldModal">
       <div class="modal">
-        <div class="modal-header">
-          <h3>新增交易</h3>
-          <button class="modal-close" id="modalClose">×</button>
-        </div>
+        <div class="modal-header"><h3>新增交易</h3><button class="modal-close" id="goldModalClose">×</button></div>
         <div class="modal-body">
-          <div class="form-row">
-            <label>日期</label>
-            <input type="date" id="tradeDate" class="form-input">
-          </div>
-          <div class="form-row">
-            <label>克重 (g)</label>
-            <input type="number" id="tradeWeight" class="form-input" placeholder="如 0.11" step="0.001">
-          </div>
-          <div class="form-row">
-            <label>成本价 (元/克)</label>
-            <input type="number" id="tradeCostPrice" class="form-input" placeholder="如 600.73" step="0.01">
-          </div>
-          <div class="form-row">
-            <label>备注</label>
-            <input type="text" id="tradeNote" class="form-input" placeholder="可选">
-          </div>
+          <div class="form-row"><label>日期</label><input type="date" id="goldDate" class="form-input"></div>
+          <div class="form-row"><label>克重 (g)</label><input type="number" id="goldWeight" class="form-input" placeholder="如 0.11" step="0.001"></div>
+          <div class="form-row"><label>成本价 (元/克)</label><input type="number" id="goldCostPrice" class="form-input" placeholder="如 600.73" step="0.01"></div>
+          <div class="form-row"><label>备注</label><input type="text" id="goldNote" class="form-input" placeholder="可选"></div>
         </div>
         <div class="modal-footer">
-          <button class="btn-cancel" id="btnCancel">取消</button>
-          <button class="btn-primary" id="btnSave">保存</button>
+          <button class="btn-cancel" id="goldBtnCancel">取消</button>
+          <button class="btn-primary" id="goldBtnSave">保存</button>
         </div>
       </div>
     </div>
 
-    <!-- 底部 -->
-    <footer class="footer">
-      <span>工作台 v1.0</span>
-    </footer>
-  </div>
+    <!-- ==================== 弹窗：账目记录 ==================== -->
+    <div class="modal-overlay" id="cModal">
+      <div class="modal">
+        <div class="modal-header"><h3>新增记录</h3><button class="modal-close" id="cModalClose">×</button></div>
+        <div class="modal-body">
+          <div class="form-row"><label>日期</label><input type="date" id="cDate" class="form-input"></div>
+          <div class="form-row"><label>账号</label><input type="text" id="cAccount" class="form-input" placeholder="如 134"></div>
+          <div class="form-row"><label>项目</label><input type="text" id="cProject" class="form-input" placeholder="如 快递"></div>
+          <div class="form-row"><label>金额 (元)</label><input type="number" id="cAmount" class="form-input" placeholder="如 57.86" step="0.01"></div>
+          <div class="form-row"><label>备注</label><input type="text" id="cNote" class="form-input" placeholder="可选"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" id="cBtnCancel">取消</button>
+          <button class="btn-primary" id="cBtnSave">保存</button>
+        </div>
+      </div>
+    </div>
 
+    <footer class="footer"><span>工作台 v2.0</span></footer>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
