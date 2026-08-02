@@ -83,10 +83,10 @@ html, body {
 .trade-weight { font-size:16px; font-weight:600; color:var(--orange); min-width:60px; }
 .trade-cost { font-size:15px; color:var(--blue); min-width:80px; }
 .trade-profit { font-size:15px; font-weight:600; flex:1; text-align:right; }
-.trade-del { color:var(--red); font-size:18px; cursor:pointer; padding:4px; opacity:0.4; }
-.trade-del:active { opacity:1; }
-.trade-edit { cursor:pointer; padding:4px; font-size:14px; opacity:0.6; }
-.trade-edit:active { opacity:1; }
+.trade-del{color:var(--red);font-size:20px;cursor:pointer;padding:8px 10px;opacity:1;background:#fef2f2;border-radius:8px}
+.trade-del:active{background:#fecaca}
+.trade-edit{cursor:pointer;padding:8px 10px;font-size:18px;opacity:1;background:#eff6ff;border-radius:8px}
+.trade-edit:active{background:#dbeafe}
 
 /* ===== 菜鸟：标签栏 ===== */
 .tab-bar { display:flex; background:var(--card-bg); margin:0 16px 12px; border-radius:12px; padding:4px; box-shadow:var(--shadow); gap:4px; }
@@ -116,10 +116,10 @@ html, body {
 .record-detail { font-size:14px; }
 .record-detail .tag { display:inline-block; padding:2px 8px; border-radius:4px; background:#eff6ff; color:var(--primary); font-size:12px; margin-right:6px; }
 .record-amount { font-size:18px; font-weight:700; }
-.record-del { color:var(--red); font-size:18px; cursor:pointer; padding:4px 8px; margin-left:4px; opacity:0.5; }
-.record-del:active { opacity:1; }
-.record-edit { cursor:pointer; padding:4px 8px; margin-left:4px; font-size:14px; opacity:0.6; }
-.record-edit:active { opacity:1; }
+.record-del { color:var(--red); font-size:20px; cursor:pointer; padding:8px 10px; margin-left:4px; opacity:1; background:#fef2f2; border-radius:8px; }
+.record-del:active { background:#fecaca; }
+.record-edit { cursor:pointer; padding:8px 10px; margin-left:4px; font-size:18px; opacity:1; background:#eff6ff; border-radius:8px; }
+.record-edit:active { background:#dbeafe; }
 
 /* ===== 悬浮按钮 ===== */
 .fab { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border:none; border-radius:50%; background:var(--primary); color:#fff; font-size:28px; font-weight:300; cursor:pointer; box-shadow:0 4px 16px rgba(59,130,246,0.4); z-index:90; display:flex; align-items:center; justify-content:center; }
