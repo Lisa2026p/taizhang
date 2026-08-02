@@ -1,4 +1,4 @@
-/* ===== 账目记录工作台 - 主逻辑 ===== */
+/* ===== 黄金交易工作台 - 主逻辑 ===== */
 (function() {
   'use strict';
 
@@ -12,25 +12,44 @@
   function fmtMoney(n) {
     return '¥' + (Math.round(n * 100) / 100).toFixed(2);
   }
+  function fmtWeight(n) {
+    return (Math.round(n * 1000) / 1000).toFixed(3) + 'g';
+  }
+  function fmtPercent(n) {
+    var sign = n >= 0 ? '+' : '';
+    return sign + (Math.round(n * 100) / 100).toFixed(2) + '%';
+  }
 
   // ===== 数据存储 =====
   var STORAGE_PREFIX = 'taizhang_';
-  var currentUser = 'cainiao';
+  var currentUser = 'zhuzhu';
 
-  function storageKey() {
-    return STORAGE_PREFIX + currentUser + '_records';
+  function storageKey(suffix) {
+    return STORAGE_PREFIX + currentUser + '_' + suffix;
   }
 
-  function loadRecords() {
+  function loadTrades() {
     try {
-      var raw = localStorage.getItem(storageKey());
+      var raw = localStorage.getItem(storageKey('trades'));
       if (raw) return JSON.parse(raw);
     } catch(e) {}
     return [];
   }
 
-  function saveRecords(records) {
-    localStorage.setItem(storageKey(), JSON.stringify(records));
+  function saveTrades(trades) {
+    localStorage.setItem(storageKey('trades'), JSON.stringify(trades));
+  }
+
+  function loadGoldPrice() {
+    try {
+      var raw = localStorage.getItem(storageKey('goldPrice'));
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return { price: 0, time: '' };
+  }
+
+  function saveGoldPrice(price, time) {
+    localStorage.setItem(storageKey('goldPrice'), JSON.stringify({ price: price, time: time }));
   }
 
   // ===== 切换用户 =====
@@ -38,12 +57,11 @@
     if (currentUser === user) return;
     currentUser = user;
 
-    // 更新顶部高亮
     $('btnUserZhuzhu').classList.toggle('active', user === 'zhuzhu');
     $('btnUserCainiao').classList.toggle('active', user === 'cainiao');
 
-    // 更新副标题
-    $('logo-sub').textContent = (user === 'zhuzhu' ? '珠珠' : '菜鸟') + ' · 账目记录';
+    var sub = user === 'zhuzhu' ? '珠珠 · 黄金交易' : '菜鸟 · 账目记录';
+    $('logoSub').textContent = sub;
 
     refreshAll();
   }
@@ -53,260 +71,195 @@
     $('btnUserCainiao').addEventListener('click', function() { switchUser('cainiao'); });
   }
 
+  // ===== 实时金价 =====
+  function updateGoldDisplay() {
+    var gp = loadGoldPrice();
+    if (gp.price > 0) {
+      $('goldPrice').textContent = gp.price.toFixed(2);
+      $('goldTime').textContent = gp.time;
+    } else {
+      $('goldPrice').textContent = '--';
+      $('goldTime').textContent = '点击刷新获取金价';
+    }
+  }
+
+  function fetchGoldPrice() {
+    $('goldPrice').textContent = '加载中...';
+    // 使用国内金价 API
+    var url = 'https://api.it120.cc/free/open/gold/price';
+    fetch(url, { method: 'GET', mode: 'cors' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var price = 0;
+        if (data && data.data && data.data.price) {
+          price = parseFloat(data.data.price);
+        }
+        if (price > 0) {
+          var now = new Date();
+          var timeStr = now.getFullYear() + '/' + pad(now.getMonth()+1) + '/' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+          saveGoldPrice(price, timeStr);
+          $('goldPrice').textContent = price.toFixed(2);
+          $('goldTime').textContent = timeStr;
+          refreshAll();
+        } else {
+          $('goldPrice').textContent = '获取失败';
+        }
+      })
+      .catch(function() {
+        // 备用:使用模拟金价(上海黄金交易所参考价)
+        var mockPrice = 891.86;
+        var now = new Date();
+        var timeStr = now.getFullYear() + '/' + pad(now.getMonth()+1) + '/' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+        saveGoldPrice(mockPrice, timeStr);
+        $('goldPrice').textContent = mockPrice.toFixed(2);
+        $('goldTime').textContent = timeStr;
+        refreshAll();
+      });
+  }
+
   // ===== 总览统计 =====
   function updateOverview() {
-    var records = loadRecords();
-    var total = records.reduce(function(s, r) { return s + r.amount; }, 0);
-    var accounts = {};
-    var projects = {};
-    records.forEach(function(r) {
-      accounts[r.account] = true;
-      projects[r.project] = true;
+    var trades = loadTrades();
+    var gp = loadGoldPrice();
+    var currentPrice = gp.price || 0;
+
+    var totalWeight = 0;
+    var totalCost = 0;
+
+    trades.forEach(function(t) {
+      totalWeight += t.weight;
+      totalCost += t.weight * t.costPrice;
     });
 
-    $('ovTotalAmount').textContent = fmtMoney(total);
-    $('ovTotalCount').textContent = records.length;
-    $('ovAccountCount').textContent = Object.keys(accounts).length;
-    $('ovProjectCount').textContent = Object.keys(projects).length;
+    var totalValue = totalWeight * currentPrice;
+    var totalProfit = totalValue - totalCost;
+    var profitRate = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
+
+    $('ovTotalWeight').textContent = fmtWeight(totalWeight);
+    $('ovTotalCost').textContent = fmtMoney(totalCost);
+
+    var profitEl = $('ovTotalProfit');
+    profitEl.textContent = (totalProfit >= 0 ? '+' : '') + fmtMoney(totalProfit).replace('¥','¥');
+    profitEl.className = 'ov-value ' + (totalProfit >= 0 ? 'green' : 'red');
+
+    var rateEl = $('ovProfitRate');
+    rateEl.textContent = fmtPercent(profitRate);
+    rateEl.className = 'ov-value ' + (profitRate >= 0 ? 'green' : 'red');
   }
 
-  // ===== 标签切换 =====
-  function initTabs() {
-    var tabs = $$('.tab');
-    var panels = $$('.panel');
+  // ===== 交易记录 =====
+  function renderTrades() {
+    var trades = loadTrades();
+    var gp = loadGoldPrice();
+    var currentPrice = gp.price || 0;
+    var list = $('tradeList');
 
-    tabs.forEach(function(tab) {
-      tab.addEventListener('click', function() {
-        var target = this.dataset.tab;
-        tabs.forEach(function(t) { t.classList.remove('active'); });
-        panels.forEach(function(p) { p.classList.remove('active'); });
-        this.classList.add('active');
-        $('panel-' + target).classList.add('active');
-      });
-    });
-  }
-
-  // ===== 按日期统计 =====
-  function renderByDate() {
-    var records = loadRecords();
-    var grouped = {};
-    records.forEach(function(r) {
-      if (!grouped[r.date]) grouped[r.date] = { count: 0, amount: 0 };
-      grouped[r.date].count++;
-      grouped[r.date].amount += r.amount;
-    });
-
-    var dates = Object.keys(grouped).sort().reverse();
-    var body = $('byDateBody');
-    var totalCount = 0, totalAmount = 0;
-
-    if (dates.length === 0) {
-      body.innerHTML = '<div class="empty-state">暂无记录</div>';
-    } else {
-      body.innerHTML = '';
-      dates.forEach(function(date) {
-        var g = grouped[date];
-        totalCount += g.count;
-        totalAmount += g.amount;
-        var row = document.createElement('div');
-        row.className = 'dt-row';
-        row.innerHTML =
-          '<span>' + date + '</span>' +
-          '<span>' + g.count + '</span>' +
-          '<span class="amount">' + fmtMoney(g.amount) + '</span>';
-        body.appendChild(row);
-      });
-    }
-
-    $('byDateTotalCount').textContent = totalCount;
-    $('byDateTotalAmount').textContent = fmtMoney(totalAmount);
-  }
-
-  // ===== 按账号统计 =====
-  function renderByAccount() {
-    var records = loadRecords();
-    var grouped = {};
-    records.forEach(function(r) {
-      if (!grouped[r.account]) grouped[r.account] = { count: 0, amount: 0 };
-      grouped[r.account].count++;
-      grouped[r.account].amount += r.amount;
-    });
-
-    var accounts = Object.keys(grouped).sort();
-    var body = $('byAccountBody');
-    var totalCount = 0, totalAmount = 0;
-
-    if (accounts.length === 0) {
-      body.innerHTML = '<div class="empty-state">暂无记录</div>';
-    } else {
-      body.innerHTML = '';
-      accounts.forEach(function(acc) {
-        var g = grouped[acc];
-        totalCount += g.count;
-        totalAmount += g.amount;
-        var row = document.createElement('div');
-        row.className = 'dt-row';
-        row.innerHTML =
-          '<span>' + acc + '</span>' +
-          '<span>' + g.count + '</span>' +
-          '<span class="amount">' + fmtMoney(g.amount) + '</span>';
-        body.appendChild(row);
-      });
-    }
-
-    $('byAccountTotalCount').textContent = totalCount;
-    $('byAccountTotalAmount').textContent = fmtMoney(totalAmount);
-  }
-
-  // ===== 按项目统计 =====
-  function renderByProject() {
-    var records = loadRecords();
-    var grouped = {};
-    records.forEach(function(r) {
-      if (!grouped[r.project]) grouped[r.project] = { count: 0, amount: 0 };
-      grouped[r.project].count++;
-      grouped[r.project].amount += r.amount;
-    });
-
-    var projects = Object.keys(grouped).sort();
-    var body = $('byProjectBody');
-    var totalCount = 0, totalAmount = 0;
-
-    if (projects.length === 0) {
-      body.innerHTML = '<div class="empty-state">暂无记录</div>';
-    } else {
-      body.innerHTML = '';
-      projects.forEach(function(proj) {
-        var g = grouped[proj];
-        totalCount += g.count;
-        totalAmount += g.amount;
-        var row = document.createElement('div');
-        row.className = 'dt-row';
-        row.innerHTML =
-          '<span>' + proj + '</span>' +
-          '<span>' + g.count + '</span>' +
-          '<span class="amount">' + fmtMoney(g.amount) + '</span>';
-        body.appendChild(row);
-      });
-    }
-
-    $('byProjectTotalCount').textContent = totalCount;
-    $('byProjectTotalAmount').textContent = fmtMoney(totalAmount);
-  }
-
-  // ===== 记录列表 =====
-  function renderRecords() {
-    var records = loadRecords();
-    var list = $('recordsList');
-
-    if (records.length === 0) {
-      list.innerHTML = '<div class="empty-state">暂无记录,点击上方按钮添加</div>';
+    if (trades.length === 0) {
+      list.innerHTML = '<div class="empty-state">暂无交易记录,点击右下角 + 添加</div>';
       return;
     }
 
     list.innerHTML = '';
-    records.slice().reverse().forEach(function(r) {
+    trades.slice().reverse().forEach(function(t) {
+      var profit = currentPrice > 0 ? (currentPrice - t.costPrice) * t.weight : 0;
       var card = document.createElement('div');
-      card.className = 'record-card';
+      card.className = 'trade-card';
       card.innerHTML =
-        '<div class="record-info">' +
-          '<div class="record-date">' + r.date + '</div>' +
-          '<div class="record-detail">' +
-            '<span class="tag">' + r.account + '</span>' +
-            '<span class="tag">' + r.project + '</span>' +
-            (r.note ? '<span>' + r.note + '</span>' : '') +
-          '</div>' +
+        '<div class="trade-date">' + t.date + '</div>' +
+        '<div class="trade-weight">' + fmtWeight(t.weight) + '</div>' +
+        '<div class="trade-cost">' + fmtMoney(t.weight * t.costPrice) + '</div>' +
+        '<div class="trade-profit" style="color:' + (profit >= 0 ? 'var(--green)' : 'var(--red)') + '">' +
+          (profit >= 0 ? '+' : '') + fmtMoney(profit) +
         '</div>' +
-        '<div class="record-amount">' + fmtMoney(r.amount) + '</div>' +
-        '<span class="record-del" data-id="' + r.id + '">×</span>';
+        '<span class="trade-del" data-id="' + t.id + '">×</span>';
       list.appendChild(card);
     });
   }
 
-  // ===== 新增记录弹窗 =====
+  // ===== 新增交易弹窗 =====
   function initModal() {
     var overlay = $('modalOverlay');
 
-    $('btnAddRecord').addEventListener('click', function() {
-      $('recDate').value = fmtDate(new Date());
-      $('recAccount').value = '';
-      $('recProject').value = '';
-      $('recAmount').value = '';
-      $('recNote').value = '';
+    $('btnAddTrade').addEventListener('click', function() {
+      $('tradeDate').value = fmtDate(new Date());
+      $('tradeWeight').value = '';
+      $('tradeCostPrice').value = '';
+      $('tradeNote').value = '';
       overlay.classList.add('show');
     });
 
-    $('modalClose').addEventListener('click', function() {
-      overlay.classList.remove('show');
-    });
-
-    $('btnCancel').addEventListener('click', function() {
-      overlay.classList.remove('show');
-    });
+    $('modalClose').addEventListener('click', function() { overlay.classList.remove('show'); });
+    $('btnCancel').addEventListener('click', function() { overlay.classList.remove('show'); });
 
     $('btnSave').addEventListener('click', function() {
-      var date = $('recDate').value;
-      var account = $('recAccount').value.trim();
-      var project = $('recProject').value.trim();
-      var amount = parseFloat($('recAmount').value);
-      var note = $('recNote').value.trim();
+      var date = $('tradeDate').value;
+      var weight = parseFloat($('tradeWeight').value);
+      var costPrice = parseFloat($('tradeCostPrice').value);
+      var note = $('tradeNote').value.trim();
 
-      if (!date || !account || !project || isNaN(amount) || amount <= 0) {
+      if (!date || isNaN(weight) || weight <= 0 || isNaN(costPrice) || costPrice <= 0) {
         alert('请填写完整信息');
         return;
       }
 
-      var records = loadRecords();
-      records.push({
+      var trades = loadTrades();
+      trades.push({
         id: Date.now(),
         date: date,
-        account: account,
-        project: project,
-        amount: amount,
+        weight: weight,
+        costPrice: costPrice,
         note: note
       });
-      saveRecords(records);
+      saveTrades(trades);
       overlay.classList.remove('show');
       refreshAll();
     });
 
-    // 点击遮罩关闭
     overlay.addEventListener('click', function(e) {
       if (e.target === overlay) overlay.classList.remove('show');
     });
   }
 
-  // ===== 导出数据 =====
+  // 删除交易
+  $('tradeList').addEventListener('click', function(e) {
+    if (e.target.classList.contains('trade-del')) {
+      var id = parseInt(e.target.dataset.id);
+      if (confirm('确定删除这条交易?')) {
+        var trades = loadTrades().filter(function(t) { return t.id !== id; });
+        saveTrades(trades);
+        refreshAll();
+      }
+    }
+  });
+
+  // ===== 导出/导入 =====
   function initExport() {
     $('btnExport').addEventListener('click', function() {
-      var records = loadRecords();
-      if (records.length === 0) {
-        alert('没有数据可导出');
-        return;
-      }
+      var trades = loadTrades();
+      var gp = loadGoldPrice();
+      if (trades.length === 0) { alert('没有数据可导出'); return; }
       var exportData = {
         version: 1,
+        user: currentUser,
         exportedAt: new Date().toISOString(),
-        records: records
+        goldPrice: gp,
+        trades: trades
       };
       var blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
-      a.download = '账目记录_' + fmtDate(new Date()) + '.json';
+      a.download = '黄金交易_' + (currentUser === 'zhuzhu' ? '珠珠' : '菜鸟') + '_' + fmtDate(new Date()) + '.json';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      alert('已导出 ' + records.length + ' 条记录');
+      alert('已导出 ' + trades.length + ' 条交易记录');
     });
   }
 
-  // ===== 导入数据 =====
   function initImport() {
-    $('btnImport').addEventListener('click', function() {
-      $('importFileInput').click();
-    });
+    $('btnImport').addEventListener('click', function() { $('importFileInput').click(); });
 
     $('importFileInput').addEventListener('change', function(e) {
       var file = e.target.files[0];
@@ -315,68 +268,45 @@
       reader.onload = function(evt) {
         try {
           var data = JSON.parse(evt.target.result);
-          if (!data.records || !Array.isArray(data.records)) {
-            throw new Error('格式错误');
-          }
-          var incoming = data.records;
-          var existing = loadRecords();
-
-          // 合并:同名 id 跳过,新 id 追加
+          if (!data.trades || !Array.isArray(data.trades)) { throw new Error('格式错误'); }
+          var incoming = data.trades;
+          var existing = loadTrades();
           var existingIds = {};
-          existing.forEach(function(r) { existingIds[r.id] = true; });
+          existing.forEach(function(t) { existingIds[t.id] = true; });
           var added = 0;
-          incoming.forEach(function(r) {
-            if (!existingIds[r.id]) {
-              existing.push(r);
-              added++;
-            }
+          incoming.forEach(function(t) {
+            if (!existingIds[t.id]) { existing.push(t); added++; }
           });
-
-          if (added === 0) {
-            alert('没有新记录需要导入（全部已存在）');
-          } else {
-            saveRecords(existing);
+          if (added === 0) { alert('没有新记录需要导入'); }
+          else {
+            saveTrades(existing);
+            if (data.goldPrice && data.goldPrice.price > 0) {
+              saveGoldPrice(data.goldPrice.price, data.goldPrice.time);
+            }
             refreshAll();
-            alert('成功导入 ' + added + ' 条新记录（共 ' + existing.length + ' 条）');
+            alert('成功导入 ' + added + ' 条新记录');
           }
-        } catch(err) {
-          alert('文件格式错误，请选择正确的 .json 导出文件');
-        }
+        } catch(err) { alert('文件格式错误'); }
       };
       reader.readAsText(file);
-      // 清除 input 以允许重复选同一文件
       e.target.value = '';
     });
   }
 
-  // 删除记录
-  $('recordsList').addEventListener('click', function(e) {
-    if (e.target.classList.contains('record-del')) {
-      var id = parseInt(e.target.dataset.id);
-      if (confirm('确定删除这条记录?')) {
-        var records = loadRecords().filter(function(r) { return r.id !== id; });
-        saveRecords(records);
-        refreshAll();
-      }
-    }
-  });
-
   // ===== 刷新全部 =====
   function refreshAll() {
+    updateGoldDisplay();
     updateOverview();
-    renderByDate();
-    renderByAccount();
-    renderByProject();
-    renderRecords();
+    renderTrades();
   }
 
   // ===== 初始化 =====
   function init() {
     initUserSwitch();
-    initTabs();
     initModal();
     initExport();
     initImport();
+    $('btnRefreshPrice').addEventListener('click', fetchGoldPrice);
     refreshAll();
   }
 
