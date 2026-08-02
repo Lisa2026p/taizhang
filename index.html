@@ -82,8 +82,13 @@
       <section class="panel" id="panel-records">
         <div class="section-header">
           <h3>📋 所有记录</h3>
-          <button class="btn-primary" id="btnAddRecord">+ 新增</button>
+          <div class="btn-group">
+            <button class="btn-outline" id="btnExport">📤 导出</button>
+            <button class="btn-outline" id="btnImport">📥 导入</button>
+            <button class="btn-primary" id="btnAddRecord">+ 新增</button>
+          </div>
         </div>
+        <input type="file" id="importFileInput" accept=".json" style="display:none">
         <div id="recordsList" class="data-list"></div>
       </section>
 
