@@ -1,0 +1,10 @@
+{
+  "name": "工作台 - 账目记录",
+  "short_name": "工作台",
+  "description": "账目记录工作台 - 按日期/账号/项目统计",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f5f7",
+  "theme_color": "#3b82f6"
+}
