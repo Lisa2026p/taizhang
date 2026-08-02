@@ -256,6 +256,79 @@
     });
   }
 
+  // ===== 导出数据 =====
+  function initExport() {
+    $('btnExport').addEventListener('click', function() {
+      var records = loadRecords();
+      if (records.length === 0) {
+        alert('没有数据可导出');
+        return;
+      }
+      var exportData = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        records: records
+      };
+      var blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = '账目记录_' + fmtDate(new Date()) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      alert('已导出 ' + records.length + ' 条记录');
+    });
+  }
+
+  // ===== 导入数据 =====
+  function initImport() {
+    $('btnImport').addEventListener('click', function() {
+      $('importFileInput').click();
+    });
+
+    $('importFileInput').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          var data = JSON.parse(evt.target.result);
+          if (!data.records || !Array.isArray(data.records)) {
+            throw new Error('格式错误');
+          }
+          var incoming = data.records;
+          var existing = loadRecords();
+
+          // 合并:同名 id 跳过,新 id 追加
+          var existingIds = {};
+          existing.forEach(function(r) { existingIds[r.id] = true; });
+          var added = 0;
+          incoming.forEach(function(r) {
+            if (!existingIds[r.id]) {
+              existing.push(r);
+              added++;
+            }
+          });
+
+          if (added === 0) {
+            alert('没有新记录需要导入（全部已存在）');
+          } else {
+            saveRecords(existing);
+            refreshAll();
+            alert('成功导入 ' + added + ' 条新记录（共 ' + existing.length + ' 条）');
+          }
+        } catch(err) {
+          alert('文件格式错误，请选择正确的 .json 导出文件');
+        }
+      };
+      reader.readAsText(file);
+      // 清除 input 以允许重复选同一文件
+      e.target.value = '';
+    });
+  }
+
   // 删除记录
   $('recordsList').addEventListener('click', function(e) {
     if (e.target.classList.contains('record-del')) {
@@ -281,6 +354,8 @@
   function init() {
     initTabs();
     initModal();
+    initExport();
+    initImport();
     refreshAll();
   }
 
