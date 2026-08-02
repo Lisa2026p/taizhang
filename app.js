@@ -14,23 +14,43 @@
   }
 
   // ===== 数据存储 =====
-  var STORAGE_KEY = 'taizhang_records';
+  var STORAGE_PREFIX = 'taizhang_';
+  var currentUser = 'cainiao';
+
+  function storageKey() {
+    return STORAGE_PREFIX + currentUser + '_records';
+  }
 
   function loadRecords() {
     try {
-      var raw = localStorage.getItem(STORAGE_KEY);
+      var raw = localStorage.getItem(storageKey());
       if (raw) return JSON.parse(raw);
     } catch(e) {}
-    // 默认示例数据(跟你截图一致)
-    return [
-      { id: 1, date: '2026-07-28', account: '134', project: '快递', amount: 57.86, note: '' },
-      { id: 2, date: '2026-07-28', account: '150', project: '快递', amount: 53.44, note: '' },
-      { id: 3, date: '2026-07-28', account: '170', project: '快递', amount: 50.46, note: '' }
-    ];
+    return [];
   }
 
   function saveRecords(records) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    localStorage.setItem(storageKey(), JSON.stringify(records));
+  }
+
+  // ===== 切换用户 =====
+  function switchUser(user) {
+    if (currentUser === user) return;
+    currentUser = user;
+
+    // 更新顶部高亮
+    $('btnUserZhuzhu').classList.toggle('active', user === 'zhuzhu');
+    $('btnUserCainiao').classList.toggle('active', user === 'cainiao');
+
+    // 更新副标题
+    $('logo-sub').textContent = (user === 'zhuzhu' ? '珠珠' : '菜鸟') + ' · 账目记录';
+
+    refreshAll();
+  }
+
+  function initUserSwitch() {
+    $('btnUserZhuzhu').addEventListener('click', function() { switchUser('zhuzhu'); });
+    $('btnUserCainiao').addEventListener('click', function() { switchUser('cainiao'); });
   }
 
   // ===== 总览统计 =====
@@ -352,6 +372,7 @@
 
   // ===== 初始化 =====
   function init() {
+    initUserSwitch();
     initTabs();
     initModal();
     initExport();
