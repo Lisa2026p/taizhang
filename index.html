@@ -273,7 +273,7 @@ html, body {
         <div class="modal-body">
           <div class="form-row"><label>日期</label><input type="date" id="goldDate" class="form-input"></div>
           <div class="form-row"><label>克重 (g)</label><input type="number" id="goldWeight" class="form-input" placeholder="如 0.11" step="0.001"></div>
-          <div class="form-row"><label>成本价 (元/克)</label><input type="number" id="goldCostPrice" class="form-input" placeholder="如 600.73" step="0.01"></div>
+          <div class="form-row"><label>成本 (元)</label><input type="number" id="goldCostPrice" class="form-input" placeholder="如 66.08" step="0.01"></div>
           <div class="form-row"><label>备注</label><input type="text" id="goldNote" class="form-input" placeholder="可选"></div>
         </div>
         <div class="modal-footer">
@@ -384,7 +384,7 @@ html, body {
     }
 
     var tw=0, tc=0;
-    trades.forEach(function(t){ tw+=t.weight; tc+=t.weight*t.costPrice; });
+    trades.forEach(function(t){ tw+=t.weight; tc+=t.costPrice; });
     var tv = tw*cp;
     var profit = tv-tc;
     var rate = tc>0 ? (profit/tc)*100 : 0;
@@ -404,15 +404,14 @@ html, body {
       trades.forEach(function(t){
         if (!byDate[t.date]) byDate[t.date] = { date: t.date, weight: 0, cost: 0, ids: [] };
         byDate[t.date].weight += t.weight;
-        byDate[t.date].cost += t.weight * t.costPrice;
+        byDate[t.date].cost += t.costPrice;
         byDate[t.date].ids.push(t.id);
       });
       var dates = Object.keys(byDate).sort().reverse();
       list.innerHTML = '';
       dates.forEach(function(d){
         var g = byDate[d];
-        var avgPrice = g.weight > 0 ? g.cost / g.weight : 0;
-        var profit = cp > 0 ? (cp - avgPrice) * g.weight : 0;
+        var profit = cp > 0 ? (cp * g.weight) - g.cost : 0;
         var c = document.createElement('div'); c.className='trade-card';
         c.style.flexDirection='column';
         c.style.alignItems='stretch';
@@ -471,13 +470,12 @@ html, body {
       var dayTrades = loadGoldTrades().filter(function(t){return t.date===date});
       if (dayTrades.length===0) return;
       var tw=0, tc=0;
-      dayTrades.forEach(function(t){tw+=t.weight; tc+=t.weight*t.costPrice;});
-      var avgPrice = tw>0 ? tc/tw : 0;
+      dayTrades.forEach(function(t){tw+=t.weight; tc+=t.costPrice;});
       goldEditingDate = date;
       $('goldModal').querySelector('h3').textContent = '编辑 '+date;
       $('goldDate').value = date;
       $('goldWeight').value = tw.toFixed(3);
-      $('goldCostPrice').value = avgPrice.toFixed(2);
+      $('goldCostPrice').value = tc.toFixed(2);
       $('goldNote').value = dayTrades[0].note||'';
       $('goldModal').classList.add('show');
     } else if (e.target.classList.contains('trade-del')) {
