@@ -414,12 +414,19 @@ html, body {
         var avgPrice = g.weight > 0 ? g.cost / g.weight : 0;
         var profit = cp > 0 ? (cp - avgPrice) * g.weight : 0;
         var c = document.createElement('div'); c.className='trade-card';
-        c.innerHTML = '<div class="trade-date">'+g.date+'</div>'+
-          '<div class="trade-weight">'+fmtWeight(g.weight)+'</div>'+
-          '<div class="trade-cost">'+fmtMoney(g.cost)+'</div>'+
-          '<div class="trade-profit" style="color:'+(profit>=0?'var(--green)':'var(--red)')+'">'+(profit>=0?'+':'')+fmtMoney(profit)+'</div>'+
-          '<span class="trade-edit" data-date="'+g.date+'">✏️</span>'+
-          '<span class="trade-del" data-date="'+g.date+'">×</span>';
+        c.style.flexDirection='column';
+        c.style.alignItems='stretch';
+        c.innerHTML =
+          '<div style="display:flex;align-items:center;gap:12px;width:100%">'+
+            '<div class="trade-date">'+g.date+'</div>'+
+            '<div class="trade-weight">'+fmtWeight(g.weight)+'</div>'+
+            '<div class="trade-cost">'+fmtMoney(g.cost)+'</div>'+
+            '<div class="trade-profit" style="color:'+(profit>=0?'var(--green)':'var(--red)')+'">'+(profit>=0?'+':'')+fmtMoney(profit)+'</div>'+
+          '</div>'+
+          '<div style="display:flex;gap:8px;margin-top:10px;width:100%">'+
+            '<button class="trade-edit" data-date="'+g.date+'" style="flex:1;padding:10px;border:1px solid var(--primary);border-radius:8px;background:#eff6ff;color:var(--primary);font-size:15px;cursor:pointer;font-family:inherit">✏️ 编辑</button>'+
+            '<button class="trade-del" data-date="'+g.date+'" style="flex:1;padding:10px;border:1px solid var(--red);border-radius:8px;background:#fef2f2;color:var(--red);font-size:15px;cursor:pointer;font-family:inherit">🗑 删除</button>'+
+          '</div>';
         list.appendChild(c);
       });
     }
@@ -578,7 +585,17 @@ html, body {
     list.innerHTML='';
     records.slice().reverse().forEach(function(r){
       var card=document.createElement('div'); card.className='record-card';
-      card.innerHTML='<div class="record-info"><div class="record-date">'+r.date+'</div><div class="record-detail"><span class="tag">'+r.account+'</span><span class="tag">'+r.project+'</span>'+(r.note?'<span>'+r.note+'</span>':'')+'</div></div><div class="record-amount">'+fmtMoney(r.amount)+'</div><span class="record-edit" data-id="'+r.id+'">✏️</span><span class="record-del" data-id="'+r.id+'">×</span>';
+      card.style.flexDirection='column';
+      card.style.alignItems='stretch';
+      card.innerHTML=
+        '<div style="display:flex;justify-content:space-between;align-items:center;width:100%">'+
+          '<div class="record-info"><div class="record-date">'+r.date+'</div><div class="record-detail"><span class="tag">'+r.account+'</span><span class="tag">'+r.project+'</span>'+(r.note?'<span>'+r.note+'</span>':'')+'</div></div>'+
+          '<div class="record-amount">'+fmtMoney(r.amount)+'</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:8px;margin-top:10px;width:100%">'+
+          '<button class="record-edit" data-id="'+r.id+'" style="flex:1;padding:10px;border:1px solid var(--primary);border-radius:8px;background:#eff6ff;color:var(--primary);font-size:15px;cursor:pointer;font-family:inherit">✏️ 编辑</button>'+
+          '<button class="record-del" data-id="'+r.id+'" style="flex:1;padding:10px;border:1px solid var(--red);border-radius:8px;background:#fef2f2;color:var(--red);font-size:15px;cursor:pointer;font-family:inherit">🗑 删除</button>'+
+        '</div>';
       list.appendChild(card);
     });
   }
