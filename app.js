@@ -112,16 +112,20 @@
           '<div class="trade-weight">'+fmtWeight(g.weight)+'</div>'+
           '<div class="trade-cost">'+fmtMoney(g.cost)+'</div>'+
           '<div class="trade-profit" style="color:'+(profit>=0?'var(--green)':'var(--red)')+'">'+(profit>=0?'+':'')+fmtMoney(profit)+'</div>'+
+          '<span class="trade-edit" data-date="'+g.date+'">✏️</span>'+
           '<span class="trade-del" data-date="'+g.date+'">×</span>';
         list.appendChild(c);
       });
     }
   }
 
-  // 黄金：弹窗
+  // 黄金：弹窗(新增/编辑)
+  var goldEditingDate = null;
   (function(){
     var overlay = $('goldModal');
     $('btnAddGold').addEventListener('click', function(){
+      goldEditingDate = null;
+      $('goldModal').querySelector('h3').textContent = '新增交易';
       $('goldDate').value = fmtDate(new Date()); $('goldWeight').value=''; $('goldCostPrice').value=''; $('goldNote').value='';
       overlay.classList.add('show');
     });
@@ -131,7 +135,13 @@
       var d=$('goldDate').value, w=parseFloat($('goldWeight').value), p=parseFloat($('goldCostPrice').value), n=$('goldNote').value.trim();
       if (!d||isNaN(w)||w<=0||isNaN(p)||p<=0) { alert('请填写完整信息'); return; }
       var trades = loadGoldTrades();
-      trades.push({id:Date.now(),date:d,weight:w,costPrice:p,note:n});
+      if (goldEditingDate !== null) {
+        // 编辑：删除当天所有，替换为一条新的
+        trades = trades.filter(function(t){ return t.date !== goldEditingDate; });
+        trades.push({id:Date.now(),date:d,weight:w,costPrice:p,note:n});
+      } else {
+        trades.push({id:Date.now(),date:d,weight:w,costPrice:p,note:n});
+      }
       saveGoldTrades(trades);
       overlay.classList.remove('show');
       refreshGold();
@@ -139,10 +149,25 @@
     overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.classList.remove('show'); });
   })();
 
-  // 黄金：删除(按日期删除当天所有记录)
+  // 黄金：编辑/删除(按日期)
   $('tradeList').addEventListener('click', function(e){
-    if (e.target.classList.contains('trade-del')) {
-      var date = e.target.dataset.date;
+    var date = e.target.dataset.date;
+    if (!date) return;
+    if (e.target.classList.contains('trade-edit')) {
+      // 编辑：取出当天数据填入弹窗
+      var dayTrades = loadGoldTrades().filter(function(t){return t.date===date});
+      if (dayTrades.length===0) return;
+      var tw=0, tc=0;
+      dayTrades.forEach(function(t){tw+=t.weight; tc+=t.weight*t.costPrice;});
+      var avgPrice = tw>0 ? tc/tw : 0;
+      goldEditingDate = date;
+      $('goldModal').querySelector('h3').textContent = '编辑 '+date;
+      $('goldDate').value = date;
+      $('goldWeight').value = tw.toFixed(3);
+      $('goldCostPrice').value = avgPrice.toFixed(2);
+      $('goldNote').value = dayTrades[0].note||'';
+      $('goldModal').classList.add('show');
+    } else if (e.target.classList.contains('trade-del')) {
       if (confirm('确定删除 '+date+' 的所有记录?')) {
         var t = loadGoldTrades().filter(function(x){return x.date !== date});
         saveGoldTrades(t); refreshGold();
@@ -247,7 +272,7 @@
     list.innerHTML='';
     records.slice().reverse().forEach(function(r){
       var card=document.createElement('div'); card.className='record-card';
-      card.innerHTML='<div class="record-info"><div class="record-date">'+r.date+'</div><div class="record-detail"><span class="tag">'+r.account+'</span><span class="tag">'+r.project+'</span>'+(r.note?'<span>'+r.note+'</span>':'')+'</div></div><div class="record-amount">'+fmtMoney(r.amount)+'</div><span class="record-del" data-id="'+r.id+'">×</span>';
+      card.innerHTML='<div class="record-info"><div class="record-date">'+r.date+'</div><div class="record-detail"><span class="tag">'+r.account+'</span><span class="tag">'+r.project+'</span>'+(r.note?'<span>'+r.note+'</span>':'')+'</div></div><div class="record-amount">'+fmtMoney(r.amount)+'</div><span class="record-edit" data-id="'+r.id+'">✏️</span><span class="record-del" data-id="'+r.id+'">×</span>';
       list.appendChild(card);
     });
   }
@@ -266,10 +291,13 @@
     });
   })();
 
-  // 菜鸟：新增弹窗
+  // 菜鸟：新增/编辑弹窗
+  var cEditingId = null;
   (function(){
     var overlay=$('cModal');
     $('btnAddRecord').addEventListener('click', function(){
+      cEditingId = null;
+      $('cModal').querySelector('h3').textContent = '新增记录';
       $('cDate').value=fmtDate(new Date()); $('cAccount').value=''; $('cProject').value=''; $('cAmount').value=''; $('cNote').value='';
       overlay.classList.add('show');
     });
@@ -279,16 +307,29 @@
       var d=$('cDate').value, a=$('cAccount').value.trim(), p=$('cProject').value.trim(), m=parseFloat($('cAmount').value), n=$('cNote').value.trim();
       if(!d||!a||!p||isNaN(m)||m<=0){alert('请填写完整信息');return;}
       var records=loadCRecords();
-      records.push({id:Date.now(),date:d,account:a,project:p,amount:m,note:n});
+      if (cEditingId !== null) {
+        // 编辑模式
+        records = records.map(function(r){ return r.id===cEditingId ? {id:r.id,date:d,account:a,project:p,amount:m,note:n} : r; });
+      } else {
+        // 新增
+        records.push({id:Date.now(),date:d,account:a,project:p,amount:m,note:n});
+      }
       saveCRecords(records); overlay.classList.remove('show'); refreshCainiao();
     });
     overlay.addEventListener('click', function(e){if(e.target===overlay)overlay.classList.remove('show')});
   })();
 
-  // 菜鸟：删除
+  // 菜鸟：编辑/删除
   $('cRecordsList').addEventListener('click', function(e){
-    if(e.target.classList.contains('record-del')){
-      var id=parseInt(e.target.dataset.id);
+    var id=parseInt(e.target.dataset.id);
+    if(e.target.classList.contains('record-edit')){
+      var r = loadCRecords().find(function(x){return x.id===id});
+      if (!r) return;
+      cEditingId = id;
+      $('cModal').querySelector('h3').textContent = '编辑记录';
+      $('cDate').value=r.date; $('cAccount').value=r.account; $('cProject').value=r.project; $('cAmount').value=r.amount; $('cNote').value=r.note||'';
+      $('cModal').classList.add('show');
+    } else if(e.target.classList.contains('record-del')){
       if(confirm('确定删除?')){
         var records=loadCRecords().filter(function(r){return r.id!==id});
         saveCRecords(records); refreshCainiao();
