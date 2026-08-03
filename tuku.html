@@ -173,6 +173,12 @@ html, body {
     if (!cloudData) { if(callback) callback(); return; }
     localSave(cloudData);
     var json = JSON.stringify(cloudData);
+    // 检查大小：超过 40MB 时跳过云端保存（太大了 GitHub API 不接受）
+    if (json.length > 40 * 1024 * 1024) {
+      console.log('[云端] 数据过大('+(json.length/1024/1024).toFixed(1)+'MB)，仅保存到本地');
+      if (callback) callback();
+      return;
+    }
     var b64 = btoa(unescape(encodeURIComponent(json)));
     fetch(API_URL + '?ref=main', {cache:'no-store'})
       .then(function(r){ return r.json(); })
@@ -181,8 +187,16 @@ html, body {
         if (d.sha) body.sha = d.sha;
         return fetch(API_URL, {method:'PUT', headers:{'Content-Type':'application/json', 'Authorization': GITHUB_TOKEN}, body: JSON.stringify(body)});
       })
-      .then(function(){ if(callback) callback(); })
-      .catch(function(){ if(callback) callback(); });
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.content) { console.log('[云端] 图库数据已同步'); }
+        else { console.log('[云端] 同步响应:', JSON.stringify(d).substring(0,100)); }
+        if (callback) callback();
+      })
+      .catch(function(e){
+        console.log('[云端] 同步失败(本地已保存):', e.message);
+        if (callback) callback();
+      });
   }
 
   // ===== 图库逻辑 =====
@@ -206,10 +220,14 @@ html, body {
     cloudSave();
   }
   function saveImages(d) {
-    try { localStorage.setItem(TUKU_KEY, JSON.stringify(d)); } catch(e) {}
+    try { localStorage.setItem(TUKU_KEY, JSON.stringify(d)); } catch(e) {
+      alert('存储空间不足！请删除一些旧图片后重试。');
+      return false;
+    }
     if (!cloudData) cloudData = {};
     cloudData.images = d;
     cloudSave();
+    return true;
   }
 
   function renderCats() {
@@ -296,25 +314,49 @@ html, body {
 
     $('tukuBtnSave').addEventListener('click', function(){
       if (!selectedFile) { alert('请先选择图片'); return; }
+
+      // 限制单张图片 3MB
+      if (selectedFile.size > 3 * 1024 * 1024) {
+        alert('图片不能超过 3MB，请压缩后再上传');
+        return;
+      }
+
       $('tukuBtnSave').textContent = '处理中...';
       $('tukuBtnSave').disabled = true;
 
       var reader = new FileReader();
       reader.onload = function(ev){
-        // 图片转 base64，直接存储
         var images = loadImages();
+        // 检查总存储是否过大（超过 20 张时提醒）
+        if (images.length >= 20) {
+          if (!confirm('已有 '+images.length+' 张图片，继续添加可能导致存储空间不足。是否继续？')) {
+            $('tukuBtnSave').textContent = '上传';
+            $('tukuBtnSave').disabled = false;
+            return;
+          }
+        }
+
         var cat = $('tukuCatSelect').value.trim();
         var tags = $('tukuTags').value.trim();
         var note = $('tukuNote').value.trim();
         var now = new Date();
         var timeStr = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate();
         images.push({id:Date.now(), url:ev.target.result, cat:cat, tags:tags, note:note, time:timeStr});
-        saveImages(images);
+        var ok = saveImages(images);
         $('tukuBtnSave').textContent = '上传';
         $('tukuBtnSave').disabled = false;
-        overlay.classList.remove('show');
-        renderGrid();
+        if (ok) {
+          overlay.classList.remove('show');
+          renderGrid();
+        }
       };
+      reader.onerror = function(){
+        $('tukuBtnSave').textContent = '上传';
+        $('tukuBtnSave').disabled = false;
+        alert('读取图片失败，请重试');
+      };
+      reader.readAsDataURL(selectedFile);
+    });
       reader.onerror = function(){
         $('tukuBtnSave').textContent = '上传';
         $('tukuBtnSave').disabled = false;
