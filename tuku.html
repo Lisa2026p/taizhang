@@ -315,21 +315,26 @@ html, body {
     $('tukuBtnSave').addEventListener('click', function(){
       if (!selectedFile) { alert('请先选择图片'); return; }
 
-      // 限制单张图片 3MB
-      if (selectedFile.size > 3 * 1024 * 1024) {
-        alert('图片不能超过 3MB，请压缩后再上传');
-        return;
-      }
-
-      $('tukuBtnSave').textContent = '处理中...';
+      $('tukuBtnSave').textContent = '压缩中...';
       $('tukuBtnSave').disabled = true;
 
-      var reader = new FileReader();
-      reader.onload = function(ev){
+      // 用 Canvas 压缩图片到合理大小（最大宽800px，质量0.7）
+      var img = new Image();
+      var url = URL.createObjectURL(selectedFile);
+      img.onload = function(){
+        URL.revokeObjectURL(url);
+        var MAX_W = 800;
+        var w = img.width, h = img.height;
+        if (w > MAX_W) { h = h * MAX_W / w; w = MAX_W; }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        var compressed = canvas.toDataURL('image/jpeg', 0.7);
+
         var images = loadImages();
-        // 检查总存储是否过大（超过 20 张时提醒）
-        if (images.length >= 20) {
-          if (!confirm('已有 '+images.length+' 张图片，继续添加可能导致存储空间不足。是否继续？')) {
+        if (images.length >= 30) {
+          if (!confirm('已有 '+images.length+' 张图片，继续可能空间不足。是否继续？')) {
             $('tukuBtnSave').textContent = '上传';
             $('tukuBtnSave').disabled = false;
             return;
@@ -341,21 +346,25 @@ html, body {
         var note = $('tukuNote').value.trim();
         var now = new Date();
         var timeStr = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate();
-        images.push({id:Date.now(), url:ev.target.result, cat:cat, tags:tags, note:note, time:timeStr});
+        images.push({id:Date.now(), url:compressed, cat:cat, tags:tags, note:note, time:timeStr});
+
+        $('tukuBtnSave').textContent = '保存中...';
         var ok = saveImages(images);
         $('tukuBtnSave').textContent = '上传';
         $('tukuBtnSave').disabled = false;
+
         if (ok) {
           overlay.classList.remove('show');
           renderGrid();
         }
       };
-      reader.onerror = function(){
+      img.onerror = function(){
+        URL.revokeObjectURL(url);
         $('tukuBtnSave').textContent = '上传';
         $('tukuBtnSave').disabled = false;
-        alert('读取图片失败，请重试');
+        alert('图片加载失败，请重试');
       };
-      reader.readAsDataURL(selectedFile);
+      img.src = url;
     });
   })();
 
