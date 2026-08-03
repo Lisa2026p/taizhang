@@ -376,49 +376,113 @@ html, body {
   $('btnUserTuku').addEventListener('click', function(){switchUser('tuku')});
 
   // ===== 云端存储(GitHub仓库 data.json) =====
-  var GITHUB_DATA_URL = 'https://raw.githubusercontent.com/Lisa2026p/taizhang/main/data.json';
+  var GITHUB_TOKEN = 'token ghp_'+atob('SFp3QXhMN2FpSlJVRU9PTk54NHdBOXFZQUlGeEd5MU9pbzJZ');
+  // 多个读取源：jsDelivr CDN(国内快) > GitHub Raw > 本地缓存
+  var GITHUB_DATA_URLS = [
+    'https://cdn.jsdelivr.net/gh/Lisa2026p/taizhang@main/data.json',
+    'https://raw.githubusercontent.com/Lisa2026p/taizhang/main/data.json'
+  ];
   var GITHUB_API_URL = 'https://api.github.com/repos/Lisa2026p/taizhang/contents/data.json';
-  var cloudData = null; // 云端缓存
+  var cloudData = null;
+  var LOCAL_KEY = 'taizhang_cloud';
+
+  // 从 localStorage 加载（永远是可靠的本地备份）
+  function localLoad() {
+    try {
+      var raw = localStorage.getItem(LOCAL_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return null;
+  }
+  function localSave(data) {
+    try { localStorage.setItem(LOCAL_KEY, JSON.stringify(data)); } catch(e) {}
+  }
 
   function cloudLoad(callback) {
-    // 先从 localStorage 读(快),再从云端同步
-    fetch(GITHUB_DATA_URL + '?t=' + Date.now(), {cache:'no-store'})
-      .then(function(r){return r.json()})
-      .then(function(d){
-        cloudData = d;
-        // 同步到 localStorage
-        localStorage.setItem('taizhang_cloud', JSON.stringify(d));
+    var localData = localLoad();
+
+    // 尝试从云端拉取（多个源依次尝试）
+    function tryFetch(idx) {
+      if (idx >= GITHUB_DATA_URLS.length) {
+        // 所有云端源都失败，用本地数据
+        if (localData) {
+          cloudData = localData;
+          console.log('[云端] 使用本地缓存数据');
+        } else {
+          cloudData = {};
+          console.log('[云端] 无任何数据，初始化空数据');
+        }
         callback();
-      })
-      .catch(function(){
-        // 网络失败用 localStorage 备份
-        try {
-          var local = localStorage.getItem('taizhang_cloud');
-          if (local) cloudData = JSON.parse(local);
-        } catch(e) {}
-        callback();
-      });
+        return;
+      }
+      fetch(GITHUB_DATA_URLS[idx] + '?t=' + Date.now(), {cache:'no-store'})
+        .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+        .then(function(d){
+          cloudData = d;
+          localSave(d);
+          console.log('[云端] 数据已同步，来源:', GITHUB_DATA_URLS[idx]);
+          callback();
+        })
+        .catch(function(e){
+          console.log('[云端] 源', idx+1, '失败:', e.message);
+          tryFetch(idx + 1);
+        });
+    }
+    tryFetch(0);
   }
 
   function cloudSave(callback) {
-    // 保存到 GitHub + localStorage
+    if (!cloudData) { if(callback) callback(); return; }
+
+    // 1. 始终先保存到 localStorage（保证本地不丢）
+    localSave(cloudData);
+
+    // 2. 异步同步到 GitHub
     var json = JSON.stringify(cloudData);
-    localStorage.setItem('taizhang_cloud', json);
     var b64 = btoa(unescape(encodeURIComponent(json)));
-    // 先 GET 拿到 sha
+
     fetch(GITHUB_API_URL + '?ref=main', {cache:'no-store'})
-      .then(function(r){return r.json()})
+      .then(function(r){ return r.json(); })
       .then(function(d){
-        var body = {message:'update data',content:b64,branch:'main'};
+        var body = {message:'update data', content:b64, branch:'main'};
         if (d.sha) body.sha = d.sha;
         return fetch(GITHUB_API_URL, {
           method:'PUT',
-          headers:{'Content-Type':'application/json','Authorization':'token ghp_'+atob('SFp3QXhMN2FpSlJVRU9PTk54NHdBOXFZQUlGeEd5MU9pbzJZ')},
-          body:JSON.stringify(body)
+          headers:{'Content-Type':'application/json', 'Authorization': GITHUB_TOKEN},
+          body: JSON.stringify(body)
         });
       })
-      .then(function(){if(callback)callback()})
-      .catch(function(){if(callback)callback()});
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d.content) {
+          console.log('[云端] 保存成功');
+          showToast('已同步到云端');
+        } else {
+          console.log('[云端] 保存响应:', JSON.stringify(d).substring(0,100));
+        }
+        if (callback) callback();
+      })
+      .catch(function(e){
+        console.log('[云端] 同步失败(本地已保存):', e.message);
+        showToast('本地已保存，联网后自动同步');
+        if (callback) callback();
+      });
+  }
+
+  // Toast 提示
+  var _toastTimer = null;
+  function showToast(msg) {
+    var t = document.getElementById('_toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = '_toast';
+      t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;z-index:9999;pointer-events:none;transition:opacity 0.3s;opacity:0;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    if (_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function(){ t.style.opacity = '0'; }, 2000);
   }
 
   // ===== 本地存储辅助(仅作快速读取) =====
@@ -979,6 +1043,15 @@ html, body {
       refreshCainiao();
       renderTuku();
     });
+
+    // 页面关闭/隐藏时保存到云端
+    window.addEventListener('beforeunload', function(){ cloudSave(); });
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden) cloudSave();
+    });
+
+    // 每30秒自动同步一次（防止意外关闭丢数据）
+    setInterval(function(){ cloudSave(); }, 30000);
   }
 
   if (document.readyState==='loading') { document.addEventListener('DOMContentLoaded', init); }
