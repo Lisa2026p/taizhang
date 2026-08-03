@@ -189,10 +189,21 @@ html, body {
   var TUKU_KEY = 'taizhang_tuku_images';
   var tukuCurrentCat = '全部';
   var tukuSearchTerm = '';
+  var tukuCustomCats = []; // 用户自定义的分类
 
   function loadImages() {
     if (cloudData && cloudData.images) return cloudData.images;
     try { var r=localStorage.getItem(TUKU_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; }
+  }
+  function loadCustomCats() {
+    if (cloudData && cloudData.customCats) return cloudData.customCats;
+    try { var r=localStorage.getItem('taizhang_tuku_cats'); return r ? JSON.parse(r) : []; } catch(e) { return []; }
+  }
+  function saveCustomCats(arr) {
+    try { localStorage.setItem('taizhang_tuku_cats', JSON.stringify(arr)); } catch(e) {}
+    if (!cloudData) cloudData = {};
+    cloudData.customCats = arr;
+    cloudSave();
   }
   function saveImages(d) {
     try { localStorage.setItem(TUKU_KEY, JSON.stringify(d)); } catch(e) {}
@@ -203,10 +214,14 @@ html, body {
 
   function renderCats() {
     var images = loadImages();
+    tukuCustomCats = loadCustomCats();
     var cats = {};
+    // 先加入自定义分类
+    tukuCustomCats.forEach(function(c){ cats[c] = true; });
+    // 再加入图片中实际使用的分类
     images.forEach(function(x){ if(x.cat) cats[x.cat]=true; });
     var catList = Object.keys(cats).sort();
-    var html = '<button class="cat-tag active" data-cat="全部">全部</button>';
+    var html = '<button class="cat-tag'+(tukuCurrentCat==='全部'?' active':'')+'" data-cat="全部">全部</button>';
     catList.forEach(function(c){
       var isActive = tukuCurrentCat===c;
       html += '<button class="cat-tag'+(isActive?' active':'')+'" data-cat="'+c+'">'+c+'</button>';
@@ -324,7 +339,15 @@ html, body {
   $('tukuCats').addEventListener('click', function(e){
     if (e.target.id === 'tukuAddCat') {
       var name = prompt('输入新分类名称:');
-      if (name && name.trim()) { tukuCurrentCat = name.trim(); renderGrid(); }
+      if (name && name.trim()) {
+        name = name.trim();
+        tukuCurrentCat = name;
+        if (tukuCustomCats.indexOf(name) < 0) {
+          tukuCustomCats.push(name);
+          saveCustomCats(tukuCustomCats);
+        }
+        renderGrid();
+      }
       return;
     }
     if (e.target.classList.contains('cat-tag')) {
