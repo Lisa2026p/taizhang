@@ -275,13 +275,7 @@ html, body {
         <input type="text" id="tukuSearch" placeholder="搜索图片标签..." style="flex:1;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--card-bg);color:var(--text);font-size:14px;outline:none">
         <button id="tukuSearchBtn" style="padding:12px 16px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:14px;cursor:pointer">搜索</button>
       </section>
-      <section style="margin:0 16px 12px;display:flex;gap:8px;flex-wrap:wrap" id="tukuCats">
-        <button class="tuku-cat active" data-cat="全部" style="padding:6px 14px;border:1px solid var(--primary);border-radius:20px;background:var(--primary);color:#fff;font-size:13px;cursor:pointer">全部</button>
-        <button class="tuku-cat" data-cat="证件" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">证件</button>
-        <button class="tuku-cat" data-cat="合同" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">合同</button>
-        <button class="tuku-cat" data-cat="票据" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">票据</button>
-        <button class="tuku-cat" data-cat="截图" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">截图</button>
-        <button class="tuku-cat" data-cat="其他" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">其他</button>
+      <section style="margin:0 16px 12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center" id="tukuCats">
       </section>
       <div id="tukuGrid" style="margin:0 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-bottom:80px"></div>
       <button class="fab" id="btnUploadImg">+</button>
@@ -292,7 +286,7 @@ html, body {
           <div class="modal-header"><h3>上传图片</h3><button class="modal-close" id="tukuModalClose">×</button></div>
           <div class="modal-body">
             <div id="tukuPreview" style="width:100%;height:150px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:14px;margin-bottom:12px;border:2px dashed var(--border)">选择图片后预览</div>
-            <div class="form-row"><label>分类</label><select id="tukuCatSelect" class="form-input"><option>证件</option><option>合同</option><option>票据</option><option>截图</option><option>其他</option></select></div>
+            <div class="form-row"><label>分类</label><input type="text" id="tukuCatSelect" class="form-input" placeholder="如 证件、合同..."></div>
             <div class="form-row"><label>标签(逗号分隔)</label><input type="text" id="tukuTags" class="form-input" placeholder="如 身份证,正面,2024"></div>
             <div class="form-row"><label>备注</label><input type="text" id="tukuNote" class="form-input" placeholder="可选"></div>
           </div>
@@ -739,7 +733,22 @@ html, body {
   function loadTuku() { return lsGet(TUKU_KEY, []); }
   function saveTuku(d) { lsSet(TUKU_KEY, d); }
 
+  function renderTukuCats() {
+    var images = loadTuku();
+    var cats = {};
+    images.forEach(function(x){ if(x.cat) cats[x.cat]=true; });
+    var catList = Object.keys(cats).sort();
+    var html = '<button class="tuku-cat active" data-cat="全部" style="padding:6px 14px;border:1px solid var(--primary);border-radius:20px;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;font-family:inherit">全部</button>';
+    catList.forEach(function(c){
+      var isActive = tukuCurrentCat===c;
+      html += '<button class="tuku-cat'+(isActive?' active':'')+'" data-cat="'+c+'" style="padding:6px 14px;border:1px solid '+(isActive?'var(--primary)':'var(--border)')+';border-radius:20px;background:'+(isActive?'var(--primary)':'var(--card-bg)')+';color:'+(isActive?'#fff':'var(--text-dim)')+';font-size:13px;cursor:pointer;font-family:inherit">'+c+'</button>';
+    });
+    html += '<button id="tukuAddCat" style="padding:6px 10px;border:1px dashed var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-light);font-size:13px;cursor:pointer;font-family:inherit">+ 分类</button>';
+    $('tukuCats').innerHTML = html;
+  }
+
   function renderTuku() {
+    renderTukuCats();
     var images = loadTuku();
     var grid = $('tukuGrid');
     // 筛选
@@ -778,7 +787,7 @@ html, body {
       selectedFile = null;
       $('tukuPreview').innerHTML = '选择图片后预览';
       $('tukuPreview').style.backgroundImage = '';
-      $('tukuCatSelect').value = '其他';
+      $('tukuCatSelect').value = '';
       $('tukuTags').value = '';
       $('tukuNote').value = '';
       overlay.classList.add('show');
@@ -818,7 +827,7 @@ html, body {
           $('tukuBtnSave').disabled = false;
           if (d.success && d.data && d.data.url) {
             var images = loadTuku();
-            var cat = $('tukuCatSelect').value;
+            var cat = $('tukuCatSelect').value.trim();
             var tags = $('tukuTags').value.trim();
             var note = $('tukuNote').value.trim();
             var now = new Date();
@@ -852,13 +861,18 @@ html, body {
     }
   });
 
-  // 分类筛选
+  // 分类筛选 / 添加新分类
   $('tukuCats').addEventListener('click', function(e){
+    if (e.target.id === 'tukuAddCat') {
+      var name = prompt('输入新分类名称:');
+      if (name && name.trim()) {
+        tukuCurrentCat = name.trim();
+        renderTuku();
+      }
+      return;
+    }
     if (e.target.classList.contains('tuku-cat')) {
       tukuCurrentCat = e.target.dataset.cat;
-      var cats = document.querySelectorAll('.tuku-cat');
-      cats.forEach(function(c){c.classList.remove('active');c.style.background='var(--card-bg)';c.style.color='var(--text-dim)';c.style.borderColor='var(--border)'});
-      e.target.classList.add('active');e.target.style.background='var(--primary)';e.target.style.color='#fff';e.target.style.borderColor='var(--primary)';
       renderTuku();
     }
   });
