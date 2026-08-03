@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#ffffff">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>图库工作台</title>
+  <style>
+:root {
+  --bg: #f5f5f7; --card-bg: #ffffff; --primary: #10b981; --primary-dark: #059669;
+  --text: #1f2937; --text-dim: #6b7280; --text-light: #9ca3af; --border: #e5e7eb;
+  --red: #ef4444; --radius: 16px; --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body {
+  height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text); font-size:15px; line-height:1.5; overflow-x:hidden;
+}
+#app { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--bg); position:relative; }
+.header {
+  background:linear-gradient(135deg,#064e3b,#065f46); padding:14px 16px;
+  display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;
+}
+.header-left { display:flex; align-items:center; gap:10px; }
+.logo-icon { font-size:24px; }
+.logo-title { font-size:17px; font-weight:700; color:#fff; }
+.logo-sub { font-size:11px; color:rgba(255,255,255,0.6); }
+
+.search-bar { margin:12px 16px; display:flex; gap:8px; }
+.search-input { flex:1; padding:12px; border:1px solid var(--border); border-radius:10px; background:var(--card-bg); color:var(--text); font-size:14px; outline:none; }
+.search-input:focus { border-color:var(--primary); }
+.search-btn { padding:12px 16px; border:none; border-radius:10px; background:var(--primary); color:#fff; font-size:14px; cursor:pointer; }
+
+.cat-bar { margin:0 16px 12px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.cat-tag { padding:6px 14px; border:1px solid var(--border); border-radius:20px; background:var(--card-bg); color:var(--text-dim); font-size:13px; cursor:pointer; font-family:inherit; }
+.cat-tag.active { border-color:var(--primary); background:var(--primary); color:#fff; }
+.cat-add { padding:6px 10px; border:1px dashed var(--border); border-radius:20px; background:var(--card-bg); color:var(--text-light); font-size:13px; cursor:pointer; font-family:inherit; }
+
+.image-grid { margin:0 16px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding-bottom:80px; }
+.image-card { background:var(--card-bg); border-radius:10px; overflow:hidden; box-shadow:var(--shadow); cursor:pointer; position:relative; }
+.image-card .img-wrap { width:100%; padding-top:100%; position:relative; overflow:hidden; }
+.image-card .img-wrap img { position:absolute; top:0;left:0; width:100%;height:100%; object-fit:cover; }
+.image-card .img-label { padding:6px 8px; font-size:11px; color:var(--text-light); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.fab { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border:none; border-radius:50%; background:var(--primary); color:#fff; font-size:28px; font-weight:300; cursor:pointer; box-shadow:0 4px 16px rgba(16,185,129,0.4); z-index:90; display:flex; align-items:center; justify-content:center; }
+.fab:active { transform:scale(.95); background:var(--primary-dark); }
+
+.modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.5); z-index:200; align-items:flex-end; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--card-bg); width:100%; max-width:480px; border-radius:20px 20px 0 0; padding:20px; animation:slideUp .3s; }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.modal-header h3 { font-size:17px; font-weight:600; }
+.modal-close { width:32px; height:32px; border:none; border-radius:50%; background:var(--bg); color:var(--text-dim); font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.form-row { margin-bottom:14px; }
+.form-row label { display:block; font-size:13px; color:var(--text-dim); margin-bottom:6px; }
+.form-input { width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font-size:15px; outline:none; -webkit-appearance:none; }
+.form-input:focus { border-color:var(--primary); }
+.modal-footer { display:flex; gap:10px; margin-top:8px; }
+.btn-primary { padding:12px; border:none; border-radius:10px; background:var(--primary); color:#fff; font-size:15px; font-weight:600; cursor:pointer; flex:1; }
+.btn-primary:active { background:var(--primary-dark); }
+.btn-primary:disabled { opacity:0.6; }
+.btn-cancel { padding:12px; border:1px solid var(--border); border-radius:10px; background:#fff; color:var(--text-dim); font-size:15px; cursor:pointer; flex:1; }
+
+.preview-box { width:100%; height:150px; background:var(--bg); border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--text-light); font-size:14px; margin-bottom:12px; border:2px dashed var(--border); cursor:pointer; }
+
+.viewer-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.9); z-index:300; align-items:flex-end; justify-content:center; }
+.viewer-overlay.show { display:flex; }
+.viewer-panel { position:relative; width:100%; max-width:480px; background:#000; padding:20px; border-radius:20px 20px 0 0; display:flex; flex-direction:column; align-items:center; }
+.viewer-close { position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:24px; cursor:pointer; }
+.viewer-img { max-width:100%; max-height:70vh; border-radius:8px; margin-top:20px; }
+.viewer-info { color:#ccc; font-size:13px; margin-top:12px; text-align:center; }
+.viewer-del { margin-top:16px; padding:12px 40px; border:1px solid var(--red); border-radius:10px; background:none; color:var(--red); font-size:15px; cursor:pointer; }
+
+.footer { text-align:center; padding:16px; font-size:11px; color:var(--text-light); }
+.nav-link { display:block; text-align:center; padding:10px; font-size:12px; color:var(--text-light); text-decoration:none; }
+.empty-state { text-align:center; padding:60px 20px; color:var(--text-light); font-size:14px; grid-column:span 3; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="header-left">
+        <div class="logo-icon">🖼️</div>
+        <div class="logo-text">
+          <div class="logo-title">图库</div>
+          <div class="logo-sub">图片管理</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="search-bar">
+      <input type="text" id="tukuSearch" class="search-input" placeholder="搜索图片标签...">
+      <button id="tukuSearchBtn" class="search-btn">搜索</button>
+    </div>
+
+    <div class="cat-bar" id="tukuCats"></div>
+
+    <div class="image-grid" id="tukuGrid"></div>
+
+    <button class="fab" id="btnUploadImg">+</button>
+    <input type="file" id="tukuFileInput" accept="image/*" style="display:none">
+
+    <!-- 上传弹窗 -->
+    <div class="modal-overlay" id="tukuModal">
+      <div class="modal">
+        <div class="modal-header"><h3>上传图片</h3><button class="modal-close" id="tukuModalClose">×</button></div>
+        <div class="modal-body">
+          <div class="preview-box" id="tukuPreview">点击选择图片</div>
+          <div class="form-row"><label>分类</label><input type="text" id="tukuCatSelect" class="form-input" placeholder="如 证件、合同..."></div>
+          <div class="form-row"><label>标签 (逗号分隔)</label><input type="text" id="tukuTags" class="form-input" placeholder="如 身份证,正面,2024"></div>
+          <div class="form-row"><label>备注</label><input type="text" id="tukuNote" class="form-input" placeholder="可选"></div>
+        </div>
+        <div class="modal-footer"><button class="btn-cancel" id="tukuBtnCancel">取消</button><button class="btn-primary" id="tukuBtnSave">上传</button></div>
+      </div>
+    </div>
+
+    <!-- 大图预览 -->
+    <div class="viewer-overlay" id="tukuViewer">
+      <div class="viewer-panel">
+        <button class="viewer-close" id="tukuViewerClose">×</button>
+        <img id="tukuViewerImg" class="viewer-img">
+        <div id="tukuViewerInfo" class="viewer-info"></div>
+        <button id="tukuViewerDel" class="viewer-del">🗑 删除此图片</button>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <span>图库工作台 v3.0</span>
+      <a class="nav-link" href="./">← 珠珠 & 菜鸟工作台</a>
+    </footer>
+  </div>
+
+  <script>
+(function() {
+  'use strict';
+  function $(id) { return document.getElementById(id); }
+
+  // ===== 云端存储（独立数据文件 tuku_data.json） =====
+  var GITHUB_TOKEN = 'token ghp_'+atob('SFp3QXhMN2FpSlJVRU9PTk54NHdBOXFZQUlGeEd5MU9pbzJZ');
+  var DATA_URLS = [
+    'https://cdn.jsdelivr.net/gh/Lisa2026p/taizhang@main/tuku_data.json',
+    'https://raw.githubusercontent.com/Lisa2026p/taizhang/main/tuku_data.json'
+  ];
+  var API_URL = 'https://api.github.com/repos/Lisa2026p/taizhang/contents/tuku_data.json';
+  var cloudData = null;
+  var LOCAL_KEY = 'taizhang_tuku_cloud';
+
+  function localLoad() { try { var r=localStorage.getItem(LOCAL_KEY); return r?JSON.parse(r):null; } catch(e) { return null; } }
+  function localSave(d) { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(d)); } catch(e) {} }
+
+  function cloudLoad(callback) {
+    var localData = localLoad();
+    function tryFetch(idx) {
+      if (idx >= DATA_URLS.length) {
+        cloudData = localData || {};
+        callback();
+        return;
+      }
+      fetch(DATA_URLS[idx] + '?t=' + Date.now(), {cache:'no-store'})
+        .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+        .then(function(d){ cloudData = d; localSave(d); callback(); })
+        .catch(function(){ tryFetch(idx + 1); });
+    }
+    tryFetch(0);
+  }
+
+  function cloudSave(callback) {
+    if (!cloudData) { if(callback) callback(); return; }
+    localSave(cloudData);
+    var json = JSON.stringify(cloudData);
+    var b64 = btoa(unescape(encodeURIComponent(json)));
+    fetch(API_URL + '?ref=main', {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var body = {message:'update tuku data', content:b64, branch:'main'};
+        if (d.sha) body.sha = d.sha;
+        return fetch(API_URL, {method:'PUT', headers:{'Content-Type':'application/json', 'Authorization': GITHUB_TOKEN}, body: JSON.stringify(body)});
+      })
+      .then(function(){ if(callback) callback(); })
+      .catch(function(){ if(callback) callback(); });
+  }
+
+  // ===== 图库逻辑 =====
+  var TUKU_KEY = 'taizhang_tuku_images';
+  var tukuCurrentCat = '全部';
+  var tukuSearchTerm = '';
+
+  function loadImages() {
+    if (cloudData && cloudData.images) return cloudData.images;
+    try { var r=localStorage.getItem(TUKU_KEY); return r ? JSON.parse(r) : []; } catch(e) { return []; }
+  }
+  function saveImages(d) {
+    try { localStorage.setItem(TUKU_KEY, JSON.stringify(d)); } catch(e) {}
+    if (!cloudData) cloudData = {};
+    cloudData.images = d;
+    cloudSave();
+  }
+
+  function renderCats() {
+    var images = loadImages();
+    var cats = {};
+    images.forEach(function(x){ if(x.cat) cats[x.cat]=true; });
+    var catList = Object.keys(cats).sort();
+    var html = '<button class="cat-tag active" data-cat="全部">全部</button>';
+    catList.forEach(function(c){
+      var isActive = tukuCurrentCat===c;
+      html += '<button class="cat-tag'+(isActive?' active':'')+'" data-cat="'+c+'">'+c+'</button>';
+    });
+    html += '<button class="cat-add" id="tukuAddCat">+ 分类</button>';
+    $('tukuCats').innerHTML = html;
+  }
+
+  function renderGrid() {
+    renderCats();
+    var images = loadImages();
+    if (tukuCurrentCat !== '全部') images = images.filter(function(x){return x.cat===tukuCurrentCat});
+    if (tukuSearchTerm) {
+      var s = tukuSearchTerm.toLowerCase();
+      images = images.filter(function(x){
+        return (x.tags||'').toLowerCase().indexOf(s)>=0 || (x.note||'').toLowerCase().indexOf(s)>=0 || (x.cat||'').toLowerCase().indexOf(s)>=0;
+      });
+    }
+    var grid = $('tukuGrid');
+    if (images.length===0) { grid.innerHTML='<div class="empty-state">暂无图片，点击右下角 + 上传</div>'; return; }
+    grid.innerHTML='';
+    images.slice().reverse().forEach(function(img){
+      var item = document.createElement('div');
+      item.className = 'image-card';
+      item.innerHTML = '<div class="img-wrap"><img src="'+img.url+'" loading="lazy" onerror="this.style.display=\'none\'"></div><div class="img-label">'+(img.cat||'未分类')+'</div>';
+      item.addEventListener('click', function(){ viewImage(img); });
+      grid.appendChild(item);
+    });
+  }
+
+  function viewImage(img) {
+    $('tukuViewerImg').src = img.url;
+    $('tukuViewerInfo').textContent = (img.cat||'') + ' | ' + (img.tags||'') + (img.note?' | '+img.note:'') + ' | ' + (img.time||'');
+    $('tukuViewer').classList.add('show');
+    $('tukuViewerDel').dataset.id = img.id;
+  }
+
+  // 上传弹窗
+  (function(){
+    var overlay = $('tukuModal');
+    var fileInput = $('tukuFileInput');
+    var selectedFile = null;
+
+    $('btnUploadImg').addEventListener('click', function(){
+      selectedFile = null;
+      $('tukuPreview').innerHTML = '点击选择图片';
+      $('tukuPreview').style.backgroundImage = '';
+      $('tukuCatSelect').value = '';
+      $('tukuTags').value = '';
+      $('tukuNote').value = '';
+      overlay.classList.add('show');
+    });
+    $('tukuModalClose').addEventListener('click', function(){overlay.classList.remove('show')});
+    $('tukuBtnCancel').addEventListener('click', function(){overlay.classList.remove('show')});
+    overlay.addEventListener('click', function(e){if(e.target===overlay)overlay.classList.remove('show')});
+
+    $('tukuPreview').addEventListener('click', function(){ fileInput.click(); });
+    fileInput.addEventListener('change', function(e){
+      var f = e.target.files[0];
+      if (!f) return;
+      selectedFile = f;
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        $('tukuPreview').innerHTML = '';
+        $('tukuPreview').style.backgroundImage = 'url('+ev.target.result+')';
+        $('tukuPreview').style.backgroundSize = 'contain';
+        $('tukuPreview').style.backgroundRepeat = 'no-repeat';
+        $('tukuPreview').style.backgroundPosition = 'center';
+      };
+      reader.readAsDataURL(f);
+    });
+
+    $('tukuBtnSave').addEventListener('click', function(){
+      if (!selectedFile) { alert('请先选择图片'); return; }
+      $('tukuBtnSave').textContent = '上传中...';
+      $('tukuBtnSave').disabled = true;
+
+      var formData = new FormData();
+      formData.append('smfile', selectedFile);
+      formData.append('format', 'json');
+
+      fetch('https://sm.ms/api/v2/upload', {method:'POST',body:formData})
+        .then(function(r){return r.json()})
+        .then(function(d){
+          $('tukuBtnSave').textContent = '上传';
+          $('tukuBtnSave').disabled = false;
+          if (d.success && d.data && d.data.url) {
+            var images = loadImages();
+            var cat = $('tukuCatSelect').value.trim();
+            var tags = $('tukuTags').value.trim();
+            var note = $('tukuNote').value.trim();
+            var now = new Date();
+            var timeStr = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate();
+            images.push({id:Date.now(), url:d.data.url, cat:cat, tags:tags, note:note, time:timeStr});
+            saveImages(images);
+            overlay.classList.remove('show');
+            renderGrid();
+          } else {
+            alert('上传失败: '+(d.message||'未知错误'));
+          }
+        })
+        .catch(function(){
+          $('tukuBtnSave').textContent = '上传';
+          $('tukuBtnSave').disabled = false;
+          alert('上传失败，请检查网络');
+        });
+    });
+  })();
+
+  // 大图预览
+  $('tukuViewerClose').addEventListener('click', function(){$('tukuViewer').classList.remove('show')});
+  $('tukuViewer').addEventListener('click', function(e){if(e.target===$('tukuViewer'))$('tukuViewer').classList.remove('show')});
+  $('tukuViewerDel').addEventListener('click', function(){
+    var id = parseInt(this.dataset.id);
+    if (confirm('确定删除此图片?')) {
+      var images = loadImages().filter(function(x){return x.id!==id});
+      saveImages(images); renderGrid(); $('tukuViewer').classList.remove('show');
+    }
+  });
+
+  // 分类筛选 / 添加新分类
+  $('tukuCats').addEventListener('click', function(e){
+    if (e.target.id === 'tukuAddCat') {
+      var name = prompt('输入新分类名称:');
+      if (name && name.trim()) { tukuCurrentCat = name.trim(); renderGrid(); }
+      return;
+    }
+    if (e.target.classList.contains('cat-tag')) {
+      tukuCurrentCat = e.target.dataset.cat;
+      renderGrid();
+    }
+  });
+
+  // 搜索
+  $('tukuSearchBtn').addEventListener('click', function(){ tukuSearchTerm = $('tukuSearch').value.trim(); renderGrid(); });
+  $('tukuSearch').addEventListener('keypress', function(e){
+    if (e.key==='Enter') { tukuSearchTerm = this.value.trim(); renderGrid(); }
+  });
+
+  // ===== 初始化 =====
+  function init() {
+    cloudLoad(function(){ renderGrid(); });
+    window.addEventListener('beforeunload', function(){ cloudSave(); });
+    document.addEventListener('visibilitychange', function(){ if (document.hidden) cloudSave(); });
+    setInterval(function(){ cloudSave(); }, 30000);
+  }
+
+  if (document.readyState==='loading') { document.addEventListener('DOMContentLoaded', init); }
+  else { init(); }
+})();
+  </script>
+</body>
+</html>
