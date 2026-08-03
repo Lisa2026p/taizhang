@@ -161,6 +161,7 @@ html, body {
         <div class="section-header">
           <h3>📝 交易记录</h3>
           <div class="btn-group">
+            <button class="btn-outline" id="btnGoldUndo" style="border-color:var(--orange);color:var(--orange)">↩ 撤销</button>
             <button class="btn-outline" id="btnGoldExport">导出</button>
             <input type="file" id="goldImportFile" accept=".json" style="display:none">
             <button class="btn-outline" id="btnGoldImport">导入</button>
@@ -339,12 +340,31 @@ html, body {
     if (cloudData && cloudData.zhuzhu && cloudData.zhuzhu.trades) return cloudData.zhuzhu.trades;
     return lsGet(GOLD_TRADES_KEY, []);
   }
+  // 操作历史（用于撤销）
+  var goldHistory = [];
+  var MAX_HISTORY = 50;
   function saveGoldTrades(t) {
+    // 保存前记录当前状态到历史
+    var current = loadGoldTrades();
+    goldHistory.push(JSON.parse(JSON.stringify(current)));
+    if (goldHistory.length > MAX_HISTORY) goldHistory.shift();
+    // 保存
     lsSet(GOLD_TRADES_KEY, t);
     if (!cloudData) cloudData = {};
     if (!cloudData.zhuzhu) cloudData.zhuzhu = {};
     cloudData.zhuzhu.trades = t;
     cloudSave();
+  }
+  function undoSaveGoldTrades() {
+    if (goldHistory.length === 0) return false;
+    var prev = goldHistory.pop();
+    lsSet(GOLD_TRADES_KEY, prev);
+    if (!cloudData) cloudData = {};
+    if (!cloudData.zhuzhu) cloudData.zhuzhu = {};
+    cloudData.zhuzhu.trades = prev;
+    cloudSave();
+    refreshGold();
+    return true;
   }
   function loadGoldPrice() {
     if (cloudData && cloudData.zhuzhu && cloudData.zhuzhu.goldPrice) return cloudData.zhuzhu.goldPrice;
@@ -476,6 +496,14 @@ html, body {
         var t = loadGoldTrades().filter(function(x){return x.date !== date});
         saveGoldTrades(t); refreshGold();
       }
+    }
+  });
+
+  // 撤销
+  $('btnGoldUndo').addEventListener('click', function(){
+    if (goldHistory.length === 0) { alert('没有可撤销的操作'); return; }
+    if (confirm('确定撤销上一步操作？将恢复到上一次保存的状态。')) {
+      undoSaveGoldTrades();
     }
   });
 
