@@ -357,13 +357,6 @@ html, body {
       };
       reader.readAsDataURL(selectedFile);
     });
-      reader.onerror = function(){
-        $('tukuBtnSave').textContent = '上传';
-        $('tukuBtnSave').disabled = false;
-        alert('读取图片失败');
-      };
-      reader.readAsDataURL(selectedFile);
-    });
   })();
 
   // 大图预览
