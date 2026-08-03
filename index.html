@@ -8,26 +8,20 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>工作台</title>
+  <title>工作台 · 珠珠 & 菜鸟</title>
   <style>
-/* ===== 工作台 ===== */
 :root {
   --bg: #f5f5f7; --card-bg: #ffffff; --primary: #3b82f6; --primary-dark: #2563eb;
   --text: #1f2937; --text-dim: #6b7280; --text-light: #9ca3af; --border: #e5e7eb;
   --blue: #3b82f6; --orange: #f59e0b; --green: #10b981; --red: #ef4444;
   --radius: 16px; --shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
-
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
 html, body {
   height:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   background:var(--bg); color:var(--text); font-size:15px; line-height:1.5; overflow-x:hidden;
 }
-
 #app { max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--bg); position:relative; }
-
-/* ===== 顶部栏 ===== */
 .header {
   background:linear-gradient(135deg,#1e3a5f,#2d5a87); padding:14px 16px;
   display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;
@@ -42,13 +36,10 @@ html, body {
   background:rgba(255,255,255,0.15); color:rgba(255,255,255,0.8); font-size:13px; cursor:pointer; font-family:inherit;
 }
 .user-badge.active { background:var(--primary); color:#fff; }
-
-/* ===== 用户视图切换 ===== */
 .user-view { display:none; flex:1; }
 .user-view.active { display:block; animation:fadeIn .25s; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-/* ===== 黄金：金价卡片 ===== */
 .gold-price-card { background:var(--card-bg); margin:12px 16px; border-radius:var(--radius); padding:18px 16px; box-shadow:var(--shadow); }
 .gp-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .gp-label { font-size:14px; font-weight:600; }
@@ -58,7 +49,6 @@ html, body {
 .gp-unit { font-size:14px; color:var(--text-dim); }
 .gp-info { font-size:13px; color:var(--text-light); }
 
-/* ===== 总览卡片 ===== */
 .overview-card { background:var(--card-bg); margin:0 16px 12px; border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); }
 .overview-title { font-size:14px; font-weight:600; margin-bottom:14px; }
 .overview-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -67,7 +57,6 @@ html, body {
 .ov-value { font-size:22px; font-weight:700; }
 .ov-value.blue{color:var(--blue)} .ov-value.orange{color:var(--orange)} .ov-value.green{color:var(--green)} .ov-value.red{color:var(--red)} .ov-value.dark{color:var(--text)}
 
-/* ===== 黄金：交易记录 ===== */
 .trade-section { margin:0 16px; padding-bottom:80px; }
 .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
 .section-header h3 { font-size:15px; font-weight:600; }
@@ -78,27 +67,19 @@ html, body {
 .btn-primary:active { background:var(--primary-dark); }
 .btn-cancel { padding:12px; border:1px solid var(--border); border-radius:10px; background:#fff; color:var(--text-dim); font-size:15px; cursor:pointer; flex:1; }
 .trade-list { display:flex; flex-direction:column; gap:8px; }
-.trade-card { background:var(--card-bg); border-radius:var(--radius); padding:14px 16px; box-shadow:var(--shadow); display:flex; align-items:center; gap:12px; }
+.trade-card { background:var(--card-bg); border-radius:var(--radius); padding:14px 16px; box-shadow:var(--shadow); }
 .trade-date { font-size:13px; color:var(--text-dim); min-width:90px; }
 .trade-weight { font-size:16px; font-weight:600; color:var(--orange); min-width:60px; }
 .trade-cost { font-size:15px; color:var(--blue); min-width:80px; }
 .trade-profit { font-size:15px; font-weight:600; flex:1; text-align:right; }
-.trade-del{color:var(--red);font-size:20px;cursor:pointer;padding:8px 10px;opacity:1;background:#fef2f2;border-radius:8px}
-.trade-del:active{background:#fecaca}
-.trade-edit{cursor:pointer;padding:8px 10px;font-size:18px;opacity:1;background:#eff6ff;border-radius:8px}
-.trade-edit:active{background:#dbeafe}
 
-/* ===== 菜鸟：标签栏 ===== */
 .tab-bar { display:flex; background:var(--card-bg); margin:0 16px 12px; border-radius:12px; padding:4px; box-shadow:var(--shadow); gap:4px; }
 .tab { flex:1; padding:10px 4px; border:none; border-radius:8px; background:none; color:var(--text-dim); font-size:13px; font-weight:500; cursor:pointer; }
 .tab.active { background:var(--primary); color:#fff; }
 .tab:active { opacity:.8; }
-
-/* ===== 菜鸟：面板 ===== */
 .c-panel { display:none; margin:0 16px; padding-bottom:60px; }
 .c-panel.active { display:block; animation:fadeIn .25s; }
 
-/* ===== 数据表格 ===== */
 .data-table { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
 .dt-header { display:grid; grid-template-columns:1fr 60px 100px; padding:12px 16px; background:#f9fafb; border-bottom:1px solid var(--border); font-size:13px; color:var(--text-dim); font-weight:500; }
 .dt-header span:last-child,.dt-row span:last-child,.dt-footer span:last-child { text-align:right; }
@@ -108,24 +89,17 @@ html, body {
 .dt-row:last-child { border-bottom:none; }
 .dt-footer { display:grid; grid-template-columns:1fr 60px 100px; padding:14px 16px; background:#f9fafb; border-top:2px solid var(--primary); font-size:14px; font-weight:600; }
 
-/* ===== 菜鸟：记录列表 ===== */
 .data-list { display:flex; flex-direction:column; gap:8px; }
-.record-card { background:var(--card-bg); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow); display:flex; justify-content:space-between; align-items:center; }
+.record-card { background:var(--card-bg); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow); }
 .record-info { flex:1; }
 .record-date { font-size:12px; color:var(--text-light); margin-bottom:2px; }
 .record-detail { font-size:14px; }
 .record-detail .tag { display:inline-block; padding:2px 8px; border-radius:4px; background:#eff6ff; color:var(--primary); font-size:12px; margin-right:6px; }
 .record-amount { font-size:18px; font-weight:700; }
-.record-del { color:var(--red); font-size:20px; cursor:pointer; padding:8px 10px; margin-left:4px; opacity:1; background:#fef2f2; border-radius:8px; }
-.record-del:active { background:#fecaca; }
-.record-edit { cursor:pointer; padding:8px 10px; margin-left:4px; font-size:18px; opacity:1; background:#eff6ff; border-radius:8px; }
-.record-edit:active { background:#dbeafe; }
 
-/* ===== 悬浮按钮 ===== */
 .fab { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border:none; border-radius:50%; background:var(--primary); color:#fff; font-size:28px; font-weight:300; cursor:pointer; box-shadow:0 4px 16px rgba(59,130,246,0.4); z-index:90; display:flex; align-items:center; justify-content:center; }
 .fab:active { transform:scale(.95); background:var(--primary-dark); }
 
-/* ===== 弹窗 ===== */
 .modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.5); z-index:200; align-items:flex-end; justify-content:center; }
 .modal-overlay.show { display:flex; }
 .modal { background:var(--card-bg); width:100%; max-width:480px; border-radius:20px 20px 0 0; padding:20px; animation:slideUp .3s; }
@@ -142,12 +116,14 @@ html, body {
 .footer { text-align:center; padding:16px; font-size:11px; color:var(--text-light); }
 .empty-state { text-align:center; padding:60px 20px; color:var(--text-light); font-size:14px; }
 
+.nav-link { display:block; text-align:center; padding:10px; font-size:12px; color:var(--text-light); text-decoration:none; }
+.nav-link:hover { color:var(--primary); }
+
 @media(max-width:360px){ .gp-value span:first-child{font-size:36px} .ov-value{font-size:18px} }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- 顶部栏 -->
     <header class="header">
       <div class="header-left">
         <div class="logo-icon">📊</div>
@@ -157,33 +133,21 @@ html, body {
         </div>
       </div>
       <div class="header-right">
-        <button class="user-badge active" id="btnUserZhuzhu">
-          <span class="user-icon">💎</span><span class="user-name">珠珠</span>
-        </button>
-        <button class="user-badge" id="btnUserCainiao">
-          <span class="user-icon">🐦</span><span class="user-name">菜鸟</span>
-        </button>
-        <button class="user-badge" id="btnUserTuku">
-          <span>🖼️</span><span>图库</span>
-        </button>
+        <button class="user-badge active" id="btnUserZhuzhu"><span>💎</span><span>珠珠</span></button>
+        <button class="user-badge" id="btnUserCainiao"><span>🐦</span><span>菜鸟</span></button>
       </div>
     </header>
 
-    <!-- ==================== 珠珠：黄金交易 ==================== -->
+    <!-- 珠珠 -->
     <div id="viewZhuzhu" class="user-view active">
-      <!-- 实时金价 -->
       <section class="gold-price-card">
         <div class="gp-header">
           <span class="gp-label">实时金价</span>
           <button class="gp-refresh" id="btnRefreshPrice">刷新</button>
         </div>
-        <div class="gp-value">
-          <span id="goldPrice">--</span><span class="gp-unit">元/克</span>
-        </div>
+        <div class="gp-value"><span id="goldPrice">--</span><span class="gp-unit">元/克</span></div>
         <div class="gp-info"><span id="goldTime">点击刷新获取金价</span></div>
       </section>
-
-      <!-- 总览 -->
       <section class="overview-card">
         <div class="overview-title">📈 总览</div>
         <div class="overview-grid">
@@ -193,8 +157,6 @@ html, body {
           <div class="ov-item"><div class="ov-label">利润率</div><div class="ov-value green" id="ovProfitRate">+0.00%</div></div>
         </div>
       </section>
-
-      <!-- 交易记录 -->
       <section class="trade-section">
         <div class="section-header">
           <h3>📝 交易记录</h3>
@@ -209,9 +171,8 @@ html, body {
       <button class="fab" id="btnAddGold">+</button>
     </div>
 
-    <!-- ==================== 菜鸟：账目记录 ==================== -->
+    <!-- 菜鸟 -->
     <div id="viewCainiao" class="user-view">
-      <!-- 总览 -->
       <section class="overview-card">
         <div class="overview-title">📈 总览</div>
         <div class="overview-grid">
@@ -221,16 +182,12 @@ html, body {
           <div class="ov-item"><div class="ov-label">项目数</div><div class="ov-value dark" id="cProjectCount">0</div></div>
         </div>
       </section>
-
-      <!-- 标签切换 -->
       <nav class="tab-bar">
         <button class="tab active" data-tab="cByDate">📅 按日期</button>
         <button class="tab" data-tab="cByAccount">👥 按账号</button>
         <button class="tab" data-tab="cByProject">📁 按项目</button>
         <button class="tab" data-tab="cRecords">📋 记录</button>
       </nav>
-
-      <!-- 按日期 -->
       <div class="c-panel active" id="cByDate">
         <div class="data-table">
           <div class="dt-header"><span>日期</span><span>笔数</span><span>金额</span></div>
@@ -238,7 +195,6 @@ html, body {
           <div class="dt-footer"><span>合计</span><span id="cByDateCount">0</span><span id="cByDateAmount">¥0.00</span></div>
         </div>
       </div>
-      <!-- 按账号 -->
       <div class="c-panel" id="cByAccount">
         <div class="data-table">
           <div class="dt-header"><span>账号</span><span>笔数</span><span>金额</span></div>
@@ -246,7 +202,6 @@ html, body {
           <div class="dt-footer"><span>合计</span><span id="cByAccountCount">0</span><span id="cByAccountAmount">¥0.00</span></div>
         </div>
       </div>
-      <!-- 按项目 -->
       <div class="c-panel" id="cByProject">
         <div class="data-table">
           <div class="dt-header"><span>项目</span><span>笔数</span><span>金额</span></div>
@@ -254,7 +209,6 @@ html, body {
           <div class="dt-footer"><span>合计</span><span id="cByProjectCount">0</span><span id="cByProjectAmount">¥0.00</span></div>
         </div>
       </div>
-      <!-- 记录 -->
       <div class="c-panel" id="cRecords">
         <div class="section-header">
           <h3>📋 所有记录</h3>
@@ -269,42 +223,7 @@ html, body {
       </div>
     </div>
 
-    <!-- ==================== 图库：图片管理 ==================== -->
-    <div id="viewTuku" class="user-view">
-      <section style="margin:12px 16px;display:flex;gap:8px">
-        <input type="text" id="tukuSearch" placeholder="搜索图片标签..." style="flex:1;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--card-bg);color:var(--text);font-size:14px;outline:none">
-        <button id="tukuSearchBtn" style="padding:12px 16px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:14px;cursor:pointer">搜索</button>
-      </section>
-      <section style="margin:0 16px 12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center" id="tukuCats">
-      </section>
-      <div id="tukuGrid" style="margin:0 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-bottom:80px"></div>
-      <button class="fab" id="btnUploadImg">+</button>
-      <input type="file" id="tukuFileInput" accept="image/*" style="display:none">
-      <!-- 图片上传弹窗 -->
-      <div class="modal-overlay" id="tukuModal">
-        <div class="modal">
-          <div class="modal-header"><h3>上传图片</h3><button class="modal-close" id="tukuModalClose">×</button></div>
-          <div class="modal-body">
-            <div id="tukuPreview" style="width:100%;height:150px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:14px;margin-bottom:12px;border:2px dashed var(--border)">选择图片后预览</div>
-            <div class="form-row"><label>分类</label><input type="text" id="tukuCatSelect" class="form-input" placeholder="如 证件、合同..."></div>
-            <div class="form-row"><label>标签(逗号分隔)</label><input type="text" id="tukuTags" class="form-input" placeholder="如 身份证,正面,2024"></div>
-            <div class="form-row"><label>备注</label><input type="text" id="tukuNote" class="form-input" placeholder="可选"></div>
-          </div>
-          <div class="modal-footer"><button class="btn-cancel" id="tukuBtnCancel">取消</button><button class="btn-primary" id="tukuBtnSave">上传</button></div>
-        </div>
-      </div>
-      <!-- 大图预览 -->
-      <div class="modal-overlay" id="tukuViewer">
-        <div style="position:relative;width:100%;max-width:480px;background:#000;padding:20px;border-radius:20px 20px 0 0;display:flex;flex-direction:column;align-items:center">
-          <button id="tukuViewerClose" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#fff;font-size:24px;cursor:pointer">×</button>
-          <img id="tukuViewerImg" style="max-width:100%;max-height:70vh;border-radius:8px;margin-top:20px">
-          <div id="tukuViewerInfo" style="color:#ccc;font-size:13px;margin-top:12px;text-align:center"></div>
-          <button id="tukuViewerDel" style="margin-top:16px;padding:12px 40px;border:1px solid var(--red);border-radius:10px;background:none;color:var(--red);font-size:15px;cursor:pointer">🗑 删除此图片</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== 弹窗：黄金交易 ==================== -->
+    <!-- 弹窗：黄金 -->
     <div class="modal-overlay" id="goldModal">
       <div class="modal">
         <div class="modal-header"><h3>新增交易</h3><button class="modal-close" id="goldModalClose">×</button></div>
@@ -314,14 +233,11 @@ html, body {
           <div class="form-row"><label>成本 (元)</label><input type="number" id="goldCostPrice" class="form-input" placeholder="如 66.08" step="0.01"></div>
           <div class="form-row"><label>备注</label><input type="text" id="goldNote" class="form-input" placeholder="可选"></div>
         </div>
-        <div class="modal-footer">
-          <button class="btn-cancel" id="goldBtnCancel">取消</button>
-          <button class="btn-primary" id="goldBtnSave">保存</button>
-        </div>
+        <div class="modal-footer"><button class="btn-cancel" id="goldBtnCancel">取消</button><button class="btn-primary" id="goldBtnSave">保存</button></div>
       </div>
     </div>
 
-    <!-- ==================== 弹窗：账目记录 ==================== -->
+    <!-- 弹窗：菜鸟 -->
     <div class="modal-overlay" id="cModal">
       <div class="modal">
         <div class="modal-header"><h3>新增记录</h3><button class="modal-close" id="cModalClose">×</button></div>
@@ -332,20 +248,18 @@ html, body {
           <div class="form-row"><label>金额 (元)</label><input type="number" id="cAmount" class="form-input" placeholder="如 57.86" step="0.01"></div>
           <div class="form-row"><label>备注</label><input type="text" id="cNote" class="form-input" placeholder="可选"></div>
         </div>
-        <div class="modal-footer">
-          <button class="btn-cancel" id="cBtnCancel">取消</button>
-          <button class="btn-primary" id="cBtnSave">保存</button>
-        </div>
+        <div class="modal-footer"><button class="btn-cancel" id="cBtnCancel">取消</button><button class="btn-primary" id="cBtnSave">保存</button></div>
       </div>
     </div>
 
-    <footer class="footer"><span>工作台 v2.0</span></footer>
+    <footer class="footer">
+      <span>工作台 v3.0 · 珠珠 & 菜鸟</span>
+      <a class="nav-link" href="tuku.html">🖼️ 图库工作台 →</a>
+    </footer>
   </div>
   <script>
-/* ===== 工作台 - 双用户双App ===== */
 (function() {
   'use strict';
-
   function $(id) { return document.getElementById(id); }
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function fmtDate(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
@@ -355,143 +269,69 @@ html, body {
 
   // ===== 用户切换 =====
   var currentUser = 'zhuzhu';
-
   function switchUser(user) {
     if (currentUser === user) return;
     currentUser = user;
     $('btnUserZhuzhu').classList.toggle('active', user==='zhuzhu');
     $('btnUserCainiao').classList.toggle('active', user==='cainiao');
-    $('btnUserTuku').classList.toggle('active', user==='tuku');
-    $('logoSub').textContent = user==='zhuzhu' ? '珠珠 · 黄金交易' : (user==='cainiao' ? '菜鸟 · 账目记录' : '图库 · 图片管理');
+    $('logoSub').textContent = user==='zhuzhu' ? '珠珠 · 黄金交易' : '菜鸟 · 账目记录';
     $('viewZhuzhu').classList.toggle('active', user==='zhuzhu');
     $('viewCainiao').classList.toggle('active', user==='cainiao');
-    $('viewTuku').classList.toggle('active', user==='tuku');
     if (user==='zhuzhu') refreshGold();
-    else if (user==='cainiao') refreshCainiao();
-    else if (user==='tuku') renderTuku();
+    else refreshCainiao();
   }
-
   $('btnUserZhuzhu').addEventListener('click', function(){switchUser('zhuzhu')});
   $('btnUserCainiao').addEventListener('click', function(){switchUser('cainiao')});
-  $('btnUserTuku').addEventListener('click', function(){switchUser('tuku')});
 
-  // ===== 云端存储(GitHub仓库 data.json) =====
+  // ===== 云端存储 =====
   var GITHUB_TOKEN = 'token ghp_'+atob('SFp3QXhMN2FpSlJVRU9PTk54NHdBOXFZQUlGeEd5MU9pbzJZ');
-  // 多个读取源：jsDelivr CDN(国内快) > GitHub Raw > 本地缓存
-  var GITHUB_DATA_URLS = [
+  var DATA_URLS = [
     'https://cdn.jsdelivr.net/gh/Lisa2026p/taizhang@main/data.json',
     'https://raw.githubusercontent.com/Lisa2026p/taizhang/main/data.json'
   ];
-  var GITHUB_API_URL = 'https://api.github.com/repos/Lisa2026p/taizhang/contents/data.json';
+  var API_URL = 'https://api.github.com/repos/Lisa2026p/taizhang/contents/data.json';
   var cloudData = null;
   var LOCAL_KEY = 'taizhang_cloud';
 
-  // 从 localStorage 加载（永远是可靠的本地备份）
-  function localLoad() {
-    try {
-      var raw = localStorage.getItem(LOCAL_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch(e) {}
-    return null;
-  }
-  function localSave(data) {
-    try { localStorage.setItem(LOCAL_KEY, JSON.stringify(data)); } catch(e) {}
-  }
+  function localLoad() { try { var r=localStorage.getItem(LOCAL_KEY); return r?JSON.parse(r):null; } catch(e) { return null; } }
+  function localSave(d) { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(d)); } catch(e) {} }
 
   function cloudLoad(callback) {
     var localData = localLoad();
-
-    // 尝试从云端拉取（多个源依次尝试）
     function tryFetch(idx) {
-      if (idx >= GITHUB_DATA_URLS.length) {
-        // 所有云端源都失败，用本地数据
-        if (localData) {
-          cloudData = localData;
-          console.log('[云端] 使用本地缓存数据');
-        } else {
-          cloudData = {};
-          console.log('[云端] 无任何数据，初始化空数据');
-        }
+      if (idx >= DATA_URLS.length) {
+        cloudData = localData || {};
         callback();
         return;
       }
-      fetch(GITHUB_DATA_URLS[idx] + '?t=' + Date.now(), {cache:'no-store'})
+      fetch(DATA_URLS[idx] + '?t=' + Date.now(), {cache:'no-store'})
         .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-        .then(function(d){
-          cloudData = d;
-          localSave(d);
-          console.log('[云端] 数据已同步，来源:', GITHUB_DATA_URLS[idx]);
-          callback();
-        })
-        .catch(function(e){
-          console.log('[云端] 源', idx+1, '失败:', e.message);
-          tryFetch(idx + 1);
-        });
+        .then(function(d){ cloudData = d; localSave(d); callback(); })
+        .catch(function(){ tryFetch(idx + 1); });
     }
     tryFetch(0);
   }
 
   function cloudSave(callback) {
     if (!cloudData) { if(callback) callback(); return; }
-
-    // 1. 始终先保存到 localStorage（保证本地不丢）
     localSave(cloudData);
-
-    // 2. 异步同步到 GitHub
     var json = JSON.stringify(cloudData);
     var b64 = btoa(unescape(encodeURIComponent(json)));
-
-    fetch(GITHUB_API_URL + '?ref=main', {cache:'no-store'})
+    fetch(API_URL + '?ref=main', {cache:'no-store'})
       .then(function(r){ return r.json(); })
       .then(function(d){
         var body = {message:'update data', content:b64, branch:'main'};
         if (d.sha) body.sha = d.sha;
-        return fetch(GITHUB_API_URL, {
-          method:'PUT',
-          headers:{'Content-Type':'application/json', 'Authorization': GITHUB_TOKEN},
-          body: JSON.stringify(body)
-        });
+        return fetch(API_URL, {method:'PUT', headers:{'Content-Type':'application/json', 'Authorization': GITHUB_TOKEN}, body: JSON.stringify(body)});
       })
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (d.content) {
-          console.log('[云端] 保存成功');
-          showToast('已同步到云端');
-        } else {
-          console.log('[云端] 保存响应:', JSON.stringify(d).substring(0,100));
-        }
-        if (callback) callback();
-      })
-      .catch(function(e){
-        console.log('[云端] 同步失败(本地已保存):', e.message);
-        showToast('本地已保存，联网后自动同步');
-        if (callback) callback();
-      });
+      .then(function(){ if(callback) callback(); })
+      .catch(function(){ if(callback) callback(); });
   }
 
-  // Toast 提示
-  var _toastTimer = null;
-  function showToast(msg) {
-    var t = document.getElementById('_toast');
-    if (!t) {
-      t = document.createElement('div');
-      t.id = '_toast';
-      t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;z-index:9999;pointer-events:none;transition:opacity 0.3s;opacity:0;';
-      document.body.appendChild(t);
-    }
-    t.textContent = msg;
-    t.style.opacity = '1';
-    if (_toastTimer) clearTimeout(_toastTimer);
-    _toastTimer = setTimeout(function(){ t.style.opacity = '0'; }, 2000);
-  }
-
-  // ===== 本地存储辅助(仅作快速读取) =====
-  function lsGet(key, def) {
-    try { var r=localStorage.getItem(key); return r ? JSON.parse(r) : def; } catch(e) { return def; }
-  }
+  function lsGet(key, def) { try { var r=localStorage.getItem(key); return r ? JSON.parse(r) : def; } catch(e) { return def; } }
   function lsSet(key, v) { localStorage.setItem(key, JSON.stringify(v)); }
 
-  // ==================== 珠珠：黄金交易 ====================
+  // ===== 珠珠 =====
   var GOLD_TRADES_KEY = 'taizhang_zhuzhu_trades';
   var GOLD_PRICE_KEY = 'taizhang_zhuzhu_goldPrice';
 
@@ -548,35 +388,24 @@ html, body {
     var trades = loadGoldTrades();
     var gp = loadGoldPrice();
     var cp = gp.price || 0;
-
-    if (cp > 0) {
-      $('goldPrice').textContent = cp.toFixed(2);
-      $('goldTime').textContent = gp.time;
-    }
-
+    if (cp > 0) { $('goldPrice').textContent = cp.toFixed(2); $('goldTime').textContent = gp.time; }
     var tw=0, tc=0;
     trades.forEach(function(t){ tw+=t.weight; tc+=t.costPrice; });
-    var tv = tw*cp;
-    var profit = tv-tc;
-    var rate = tc>0 ? (profit/tc)*100 : 0;
-
+    var tv = tw*cp, profit = tv-tc, rate = tc>0 ? (profit/tc)*100 : 0;
     $('ovTotalWeight').textContent = fmtWeight(tw);
     $('ovTotalCost').textContent = fmtMoney(tc);
     var pe = $('ovTotalProfit'); pe.textContent = (profit>=0?'+':'')+fmtMoney(profit); pe.className = 'ov-value '+(profit>=0?'green':'red');
     var re = $('ovProfitRate'); re.textContent = fmtPercent(rate); re.className = 'ov-value '+(rate>=0?'green':'red');
 
-    // 交易列表 - 按日期汇总
     var list = $('tradeList');
     if (trades.length===0) {
-      list.innerHTML = '<div class="empty-state">暂无交易记录,点击右下角 + 添加</div>';
+      list.innerHTML = '<div class="empty-state">暂无交易记录，点击右下角 + 添加</div>';
     } else {
-      // 按日期分组汇总
       var byDate = {};
       trades.forEach(function(t){
-        if (!byDate[t.date]) byDate[t.date] = { date: t.date, weight: 0, cost: 0, ids: [] };
+        if (!byDate[t.date]) byDate[t.date] = { date: t.date, weight: 0, cost: 0 };
         byDate[t.date].weight += t.weight;
         byDate[t.date].cost += t.costPrice;
-        byDate[t.date].ids.push(t.id);
       });
       var dates = Object.keys(byDate).sort().reverse();
       list.innerHTML = '';
@@ -584,8 +413,7 @@ html, body {
         var g = byDate[d];
         var profit = cp > 0 ? (cp * g.weight) - g.cost : 0;
         var c = document.createElement('div'); c.className='trade-card';
-        c.style.flexDirection='column';
-        c.style.alignItems='stretch';
+        c.style.cssText = 'display:flex;flex-direction:column;align-items:stretch;gap:0';
         c.innerHTML =
           '<div style="display:flex;align-items:center;gap:12px;width:100%">'+
             '<div class="trade-date">'+g.date+'</div>'+
@@ -602,7 +430,6 @@ html, body {
     }
   }
 
-  // 黄金：弹窗(新增/编辑)
   var goldEditingDate = null;
   (function(){
     var overlay = $('goldModal');
@@ -619,12 +446,9 @@ html, body {
       if (!d||isNaN(w)||w<=0||isNaN(p)||p<=0) { alert('请填写完整信息'); return; }
       var trades = loadGoldTrades();
       if (goldEditingDate !== null) {
-        // 编辑：删除当天所有，替换为一条新的
         trades = trades.filter(function(t){ return t.date !== goldEditingDate; });
-        trades.push({id:Date.now(),date:d,weight:w,costPrice:p,note:n});
-      } else {
-        trades.push({id:Date.now(),date:d,weight:w,costPrice:p,note:n});
       }
+      trades.push({id:Date.now(),date:d,weight:w,costPrice:p,note:n});
       saveGoldTrades(trades);
       overlay.classList.remove('show');
       refreshGold();
@@ -632,12 +456,10 @@ html, body {
     overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.classList.remove('show'); });
   })();
 
-  // 黄金：编辑/删除(按日期)
   $('tradeList').addEventListener('click', function(e){
     var date = e.target.dataset.date;
     if (!date) return;
     if (e.target.classList.contains('trade-edit')) {
-      // 编辑：取出当天数据填入弹窗
       var dayTrades = loadGoldTrades().filter(function(t){return t.date===date});
       if (dayTrades.length===0) return;
       var tw=0, tc=0;
@@ -657,14 +479,12 @@ html, body {
     }
   });
 
-  // 黄金：导出导入
   $('btnGoldExport').addEventListener('click', function(){
     var t=loadGoldTrades(), gp=loadGoldPrice();
     if (t.length===0){alert('无数据');return;}
     var blob = new Blob([JSON.stringify({v:1,user:'zhuzhu',exportedAt:new Date().toISOString(),goldPrice:gp,trades:t},null,2)],{type:'application/json'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='黄金交易_珠珠_'+fmtDate(new Date())+'.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    alert('已导出 '+t.length+' 条');
   });
   $('btnGoldImport').addEventListener('click', function(){ $('goldImportFile').click(); });
   $('goldImportFile').addEventListener('change', function(e){
@@ -677,17 +497,16 @@ html, body {
         var exist=loadGoldTrades(), ids={}, added=0;
         exist.forEach(function(x){ids[x.id]=true});
         d.trades.forEach(function(x){if(!ids[x.id]){exist.push(x);added++}});
-        if(added===0){alert('无新记录');}else{saveGoldTrades(exist);refreshGold();alert('已导入 '+added+' 条');}
+        if(added>0){saveGoldTrades(exist);refreshGold();alert('已导入 '+added+' 条');}else{alert('无新记录');}
         if(d.goldPrice&&d.goldPrice.price>0) saveGoldPrice(d.goldPrice.price,d.goldPrice.time);
       }catch(ex){alert('格式错误');}
     };
     r.readAsText(f); e.target.value='';
   });
 
-  // 黄金：刷新金价
   $('btnRefreshPrice').addEventListener('click', fetchGoldPrice);
 
-  // ==================== 菜鸟：账目记录 ====================
+  // ===== 菜鸟 =====
   var C_KEY = 'taizhang_cainiao_records';
 
   function loadCRecords() {
@@ -706,12 +525,10 @@ html, body {
     var records = loadCRecords();
     var total=0, accts={}, projs={};
     records.forEach(function(r){ total+=r.amount; accts[r.account]=true; projs[r.project]=true; });
-
     $('cTotalAmount').textContent = fmtMoney(total);
     $('cTotalCount').textContent = records.length;
     $('cAccountCount').textContent = Object.keys(accts).length;
     $('cProjectCount').textContent = Object.keys(projs).length;
-
     renderCByDate(records);
     renderCByAccount(records);
     renderCByProject(records);
@@ -725,12 +542,11 @@ html, body {
     body.innerHTML = dates.length===0 ? '<div class="empty-state">暂无记录</div>' : '';
     dates.forEach(function(d){ var v=g[d]; tc+=v.c; ta+=v.a;
       var row=document.createElement('div'); row.className='dt-row';
-      row.innerHTML='<span>'+d+'</span><span>'+v.c+'</span><span class="amount">'+fmtMoney(v.a)+'</span>';
+      row.innerHTML='<span>'+d+'</span><span>'+v.c+'</span><span>'+fmtMoney(v.a)+'</span>';
       body.appendChild(row);
     });
     $('cByDateCount').textContent=tc; $('cByDateAmount').textContent=fmtMoney(ta);
   }
-
   function renderCByAccount(records) {
     var g={}, body=$('cByAccountBody'), tc=0, ta=0;
     records.forEach(function(r){ if(!g[r.account]) g[r.account]={c:0,a:0}; g[r.account].c++; g[r.account].a+=r.amount; });
@@ -738,12 +554,11 @@ html, body {
     body.innerHTML = accts.length===0 ? '<div class="empty-state">暂无记录</div>' : '';
     accts.forEach(function(a){ var v=g[a]; tc+=v.c; ta+=v.a;
       var row=document.createElement('div'); row.className='dt-row';
-      row.innerHTML='<span>'+a+'</span><span>'+v.c+'</span><span class="amount">'+fmtMoney(v.a)+'</span>';
+      row.innerHTML='<span>'+a+'</span><span>'+v.c+'</span><span>'+fmtMoney(v.a)+'</span>';
       body.appendChild(row);
     });
     $('cByAccountCount').textContent=tc; $('cByAccountAmount').textContent=fmtMoney(ta);
   }
-
   function renderCByProject(records) {
     var g={}, body=$('cByProjectBody'), tc=0, ta=0;
     records.forEach(function(r){ if(!g[r.project]) g[r.project]={c:0,a:0}; g[r.project].c++; g[r.project].a+=r.amount; });
@@ -751,20 +566,18 @@ html, body {
     body.innerHTML = projs.length===0 ? '<div class="empty-state">暂无记录</div>' : '';
     projs.forEach(function(p){ var v=g[p]; tc+=v.c; ta+=v.a;
       var row=document.createElement('div'); row.className='dt-row';
-      row.innerHTML='<span>'+p+'</span><span>'+v.c+'</span><span class="amount">'+fmtMoney(v.a)+'</span>';
+      row.innerHTML='<span>'+p+'</span><span>'+v.c+'</span><span>'+fmtMoney(v.a)+'</span>';
       body.appendChild(row);
     });
     $('cByProjectCount').textContent=tc; $('cByProjectAmount').textContent=fmtMoney(ta);
   }
-
   function renderCRecords(records) {
     var list=$('cRecordsList');
     if (records.length===0) { list.innerHTML='<div class="empty-state">暂无记录</div>'; return; }
     list.innerHTML='';
     records.slice().reverse().forEach(function(r){
       var card=document.createElement('div'); card.className='record-card';
-      card.style.flexDirection='column';
-      card.style.alignItems='stretch';
+      card.style.cssText = 'display:flex;flex-direction:column;align-items:stretch;gap:0';
       card.innerHTML=
         '<div style="display:flex;justify-content:space-between;align-items:center;width:100%">'+
           '<div class="record-info"><div class="record-date">'+r.date+'</div><div class="record-detail"><span class="tag">'+r.account+'</span><span class="tag">'+r.project+'</span>'+(r.note?'<span>'+r.note+'</span>':'')+'</div></div>'+
@@ -778,7 +591,6 @@ html, body {
     });
   }
 
-  // 菜鸟：标签切换
   (function(){
     var tabs=document.querySelectorAll('#viewCainiao .tab');
     var panels=document.querySelectorAll('#viewCainiao .c-panel');
@@ -792,7 +604,6 @@ html, body {
     });
   })();
 
-  // 菜鸟：新增/编辑弹窗
   var cEditingId = null;
   (function(){
     var overlay=$('cModal');
@@ -809,10 +620,8 @@ html, body {
       if(!d||!a||!p||isNaN(m)||m<=0){alert('请填写完整信息');return;}
       var records=loadCRecords();
       if (cEditingId !== null) {
-        // 编辑模式
         records = records.map(function(r){ return r.id===cEditingId ? {id:r.id,date:d,account:a,project:p,amount:m,note:n} : r; });
       } else {
-        // 新增
         records.push({id:Date.now(),date:d,account:a,project:p,amount:m,note:n});
       }
       saveCRecords(records); overlay.classList.remove('show'); refreshCainiao();
@@ -820,7 +629,6 @@ html, body {
     overlay.addEventListener('click', function(e){if(e.target===overlay)overlay.classList.remove('show')});
   })();
 
-  // 菜鸟：编辑/删除
   $('cRecordsList').addEventListener('click', function(e){
     var id=parseInt(e.target.dataset.id);
     if(e.target.classList.contains('record-edit')){
@@ -838,13 +646,11 @@ html, body {
     }
   });
 
-  // 菜鸟：导出导入
   $('btnCExport').addEventListener('click', function(){
     var r=loadCRecords(); if(r.length===0){alert('无数据');return;}
     var blob=new Blob([JSON.stringify({v:1,user:'cainiao',exportedAt:new Date().toISOString(),records:r},null,2)],{type:'application/json'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='账目记录_菜鸟_'+fmtDate(new Date())+'.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    alert('已导出 '+r.length+' 条');
   });
   $('btnCImport').addEventListener('click', function(){ $('cImportFile').click(); });
   $('cImportFile').addEventListener('change', function(e){
@@ -857,200 +663,22 @@ html, body {
         var exist=loadCRecords(), ids={}, added=0;
         exist.forEach(function(x){ids[x.id]=true});
         d.records.forEach(function(x){if(!ids[x.id]){exist.push(x);added++}});
-        if(added===0){alert('无新记录');}else{saveCRecords(exist);refreshCainiao();alert('已导入 '+added+' 条');}
+        if(added>0){saveCRecords(exist);refreshCainiao();alert('已导入 '+added+' 条');}else{alert('无新记录');}
       }catch(ex){alert('格式错误');}
     };
     r.readAsText(f); e.target.value='';
   });
 
-  // ==================== 图库：图片管理 ====================
-  var TUKU_KEY = 'taizhang_tuku_images';
-  var tukuCurrentCat = '全部';
-  var tukuSearchTerm = '';
-
-  function loadTuku() {
-    if (cloudData && cloudData.tuku && cloudData.tuku.images) return cloudData.tuku.images;
-    return lsGet(TUKU_KEY, []);
-  }
-  function saveTuku(d) {
-    lsSet(TUKU_KEY, d);
-    if (!cloudData) cloudData = {};
-    if (!cloudData.tuku) cloudData.tuku = {};
-    cloudData.tuku.images = d;
-    cloudSave();
-  }
-
-  function renderTukuCats() {
-    var images = loadTuku();
-    var cats = {};
-    images.forEach(function(x){ if(x.cat) cats[x.cat]=true; });
-    var catList = Object.keys(cats).sort();
-    var html = '<button class="tuku-cat active" data-cat="全部" style="padding:6px 14px;border:1px solid var(--primary);border-radius:20px;background:var(--primary);color:#fff;font-size:13px;cursor:pointer;font-family:inherit">全部</button>';
-    catList.forEach(function(c){
-      var isActive = tukuCurrentCat===c;
-      html += '<button class="tuku-cat'+(isActive?' active':'')+'" data-cat="'+c+'" style="padding:6px 14px;border:1px solid '+(isActive?'var(--primary)':'var(--border)')+';border-radius:20px;background:'+(isActive?'var(--primary)':'var(--card-bg)')+';color:'+(isActive?'#fff':'var(--text-dim)')+';font-size:13px;cursor:pointer;font-family:inherit">'+c+'</button>';
-    });
-    html += '<button id="tukuAddCat" style="padding:6px 10px;border:1px dashed var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-light);font-size:13px;cursor:pointer;font-family:inherit">+ 分类</button>';
-    $('tukuCats').innerHTML = html;
-  }
-
-  function renderTuku() {
-    renderTukuCats();
-    var images = loadTuku();
-    var grid = $('tukuGrid');
-    // 筛选
-    if (tukuCurrentCat !== '全部') images = images.filter(function(x){return x.cat===tukuCurrentCat});
-    if (tukuSearchTerm) {
-      var s = tukuSearchTerm.toLowerCase();
-      images = images.filter(function(x){
-        return (x.tags||'').toLowerCase().indexOf(s)>=0 || (x.note||'').toLowerCase().indexOf(s)>=0 || (x.cat||'').toLowerCase().indexOf(s)>=0;
-      });
-    }
-    if (images.length===0) { grid.innerHTML='<div class="empty-state" style="grid-column:span 3">暂无图片</div>'; return; }
-    grid.innerHTML='';
-    images.slice().reverse().forEach(function(img){
-      var item = document.createElement('div');
-      item.style.cssText='background:var(--card-bg);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;position:relative';
-      item.innerHTML='<div style="width:100%;padding-top:100%;position:relative;overflow:hidden"><img src="'+img.url+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.style.display=\'none\'"></div><div style="padding:6px 8px;font-size:11px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+img.cat+'</div>';
-      item.addEventListener('click', function(){ viewTuku(img); });
-      grid.appendChild(item);
-    });
-  }
-
-  function viewTuku(img) {
-    $('tukuViewerImg').src = img.url;
-    $('tukuViewerInfo').textContent = (img.cat||'') + ' | ' + (img.tags||'') + (img.note?' | '+img.note:'') + ' | ' + (img.time||'');
-    $('tukuViewer').classList.add('show');
-    $('tukuViewerDel').dataset.id = img.id;
-  }
-
-  // 上传弹窗
-  (function(){
-    var overlay = $('tukuModal');
-    var fileInput = $('tukuFileInput');
-    var selectedFile = null;
-
-    $('btnUploadImg').addEventListener('click', function(){
-      selectedFile = null;
-      $('tukuPreview').innerHTML = '选择图片后预览';
-      $('tukuPreview').style.backgroundImage = '';
-      $('tukuCatSelect').value = '';
-      $('tukuTags').value = '';
-      $('tukuNote').value = '';
-      overlay.classList.add('show');
-    });
-    $('tukuModalClose').addEventListener('click', function(){overlay.classList.remove('show')});
-    $('tukuBtnCancel').addEventListener('click', function(){overlay.classList.remove('show')});
-
-    $('tukuPreview').addEventListener('click', function(){ fileInput.click(); });
-    fileInput.addEventListener('change', function(e){
-      var f = e.target.files[0];
-      if (!f) return;
-      selectedFile = f;
-      var reader = new FileReader();
-      reader.onload = function(ev){
-        $('tukuPreview').innerHTML = '';
-        $('tukuPreview').style.backgroundImage = 'url('+ev.target.result+')';
-        $('tukuPreview').style.backgroundSize = 'contain';
-        $('tukuPreview').style.backgroundRepeat = 'no-repeat';
-        $('tukuPreview').style.backgroundPosition = 'center';
-      };
-      reader.readAsDataURL(f);
-    });
-
-    $('tukuBtnSave').addEventListener('click', function(){
-      if (!selectedFile) { alert('请先选择图片'); return; }
-      $('tukuBtnSave').textContent = '上传中...';
-      $('tukuBtnSave').disabled = true;
-
-      var formData = new FormData();
-      formData.append('smfile', selectedFile);
-      formData.append('format', 'json');
-
-      fetch('https://sm.ms/api/v2/upload', {method:'POST',body:formData})
-        .then(function(r){return r.json()})
-        .then(function(d){
-          $('tukuBtnSave').textContent = '上传';
-          $('tukuBtnSave').disabled = false;
-          if (d.success && d.data && d.data.url) {
-            var images = loadTuku();
-            var cat = $('tukuCatSelect').value.trim();
-            var tags = $('tukuTags').value.trim();
-            var note = $('tukuNote').value.trim();
-            var now = new Date();
-            var timeStr = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate();
-            images.push({id:Date.now(), url:d.data.url, thumb:d.data.url, cat:cat, tags:tags, note:note, time:timeStr});
-            saveTuku(images);
-            overlay.classList.remove('show');
-            renderTuku();
-          } else {
-            alert('上传失败: '+(d.message||'未知错误'));
-          }
-        })
-        .catch(function(){
-          $('tukuBtnSave').textContent = '上传';
-          $('tukuBtnSave').disabled = false;
-          alert('上传失败,请检查网络');
-        });
-    });
-
-    overlay.addEventListener('click', function(e){if(e.target===overlay)overlay.classList.remove('show')});
-  })();
-
-  // 大图预览
-  $('tukuViewerClose').addEventListener('click', function(){$('tukuViewer').classList.remove('show')});
-  $('tukuViewer').addEventListener('click', function(e){if(e.target===$('tukuViewer'))$('tukuViewer').classList.remove('show')});
-  $('tukuViewerDel').addEventListener('click', function(){
-    var id = parseInt(this.dataset.id);
-    if (confirm('确定删除?')) {
-      var images = loadTuku().filter(function(x){return x.id!==id});
-      saveTuku(images); renderTuku(); $('tukuViewer').classList.remove('show');
-    }
-  });
-
-  // 分类筛选 / 添加新分类
-  $('tukuCats').addEventListener('click', function(e){
-    if (e.target.id === 'tukuAddCat') {
-      var name = prompt('输入新分类名称:');
-      if (name && name.trim()) {
-        tukuCurrentCat = name.trim();
-        renderTuku();
-      }
-      return;
-    }
-    if (e.target.classList.contains('tuku-cat')) {
-      tukuCurrentCat = e.target.dataset.cat;
-      renderTuku();
-    }
-  });
-
-  // 搜索
-  $('tukuSearchBtn').addEventListener('click', function(){
-    tukuSearchTerm = $('tukuSearch').value.trim();
-    renderTuku();
-  });
-  $('tukuSearch').addEventListener('keypress', function(e){
-    if (e.key==='Enter') { tukuSearchTerm = this.value.trim(); renderTuku(); }
-  });
-
   // ===== 初始化 =====
   function init() {
-    // 先从云端加载数据
     cloudLoad(function(){
       var gp = loadGoldPrice();
       if (gp.price > 0) { $('goldPrice').textContent = gp.price.toFixed(2); $('goldTime').textContent = gp.time; }
       refreshGold();
       refreshCainiao();
-      renderTuku();
     });
-
-    // 页面关闭/隐藏时保存到云端
     window.addEventListener('beforeunload', function(){ cloudSave(); });
-    document.addEventListener('visibilitychange', function(){
-      if (document.hidden) cloudSave();
-    });
-
-    // 每30秒自动同步一次（防止意外关闭丢数据）
+    document.addEventListener('visibilitychange', function(){ if (document.hidden) cloudSave(); });
     setInterval(function(){ cloudSave(); }, 30000);
   }
 
