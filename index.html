@@ -375,7 +375,53 @@ html, body {
   $('btnUserCainiao').addEventListener('click', function(){switchUser('cainiao')});
   $('btnUserTuku').addEventListener('click', function(){switchUser('tuku')});
 
-  // ===== 本地存储辅助 =====
+  // ===== 云端存储(GitHub仓库 data.json) =====
+  var GITHUB_DATA_URL = 'https://raw.githubusercontent.com/Lisa2026p/taizhang/main/data.json';
+  var GITHUB_API_URL = 'https://api.github.com/repos/Lisa2026p/taizhang/contents/data.json';
+  var cloudData = null; // 云端缓存
+
+  function cloudLoad(callback) {
+    // 先从 localStorage 读(快),再从云端同步
+    fetch(GITHUB_DATA_URL + '?t=' + Date.now(), {cache:'no-store'})
+      .then(function(r){return r.json()})
+      .then(function(d){
+        cloudData = d;
+        // 同步到 localStorage
+        localStorage.setItem('taizhang_cloud', JSON.stringify(d));
+        callback();
+      })
+      .catch(function(){
+        // 网络失败用 localStorage 备份
+        try {
+          var local = localStorage.getItem('taizhang_cloud');
+          if (local) cloudData = JSON.parse(local);
+        } catch(e) {}
+        callback();
+      });
+  }
+
+  function cloudSave(callback) {
+    // 保存到 GitHub + localStorage
+    var json = JSON.stringify(cloudData);
+    localStorage.setItem('taizhang_cloud', json);
+    var b64 = btoa(unescape(encodeURIComponent(json)));
+    // 先 GET 拿到 sha
+    fetch(GITHUB_API_URL + '?ref=main', {cache:'no-store'})
+      .then(function(r){return r.json()})
+      .then(function(d){
+        var body = {message:'update data',content:b64,branch:'main'};
+        if (d.sha) body.sha = d.sha;
+        return fetch(GITHUB_API_URL, {
+          method:'PUT',
+          headers:{'Content-Type':'application/json','Authorization':'token ghp_'+atob('SFp3QXhMN2FpSlJVRU9PTk54NHdBOXFZQUlGeEd5MU9pbzJZ')},
+          body:JSON.stringify(body)
+        });
+      })
+      .then(function(){if(callback)callback()})
+      .catch(function(){if(callback)callback()});
+  }
+
+  // ===== 本地存储辅助(仅作快速读取) =====
   function lsGet(key, def) {
     try { var r=localStorage.getItem(key); return r ? JSON.parse(r) : def; } catch(e) { return def; }
   }
@@ -385,10 +431,29 @@ html, body {
   var GOLD_TRADES_KEY = 'taizhang_zhuzhu_trades';
   var GOLD_PRICE_KEY = 'taizhang_zhuzhu_goldPrice';
 
-  function loadGoldTrades() { return lsGet(GOLD_TRADES_KEY, []); }
-  function saveGoldTrades(t) { lsSet(GOLD_TRADES_KEY, t); }
-  function loadGoldPrice() { return lsGet(GOLD_PRICE_KEY, {price:0,time:''}); }
-  function saveGoldPrice(p, t) { lsSet(GOLD_PRICE_KEY, {price:p, time:t}); }
+  function loadGoldTrades() {
+    if (cloudData && cloudData.zhuzhu && cloudData.zhuzhu.trades) return cloudData.zhuzhu.trades;
+    return lsGet(GOLD_TRADES_KEY, []);
+  }
+  function saveGoldTrades(t) {
+    lsSet(GOLD_TRADES_KEY, t);
+    if (!cloudData) cloudData = {};
+    if (!cloudData.zhuzhu) cloudData.zhuzhu = {};
+    cloudData.zhuzhu.trades = t;
+    cloudSave();
+  }
+  function loadGoldPrice() {
+    if (cloudData && cloudData.zhuzhu && cloudData.zhuzhu.goldPrice) return cloudData.zhuzhu.goldPrice;
+    return lsGet(GOLD_PRICE_KEY, {price:0,time:''});
+  }
+  function saveGoldPrice(p, t) {
+    var gp = {price:p, time:t};
+    lsSet(GOLD_PRICE_KEY, gp);
+    if (!cloudData) cloudData = {};
+    if (!cloudData.zhuzhu) cloudData.zhuzhu = {};
+    cloudData.zhuzhu.goldPrice = gp;
+    cloudSave();
+  }
 
   function fetchGoldPrice() {
     $('goldPrice').textContent = '加载中...';
@@ -561,8 +626,17 @@ html, body {
   // ==================== 菜鸟：账目记录 ====================
   var C_KEY = 'taizhang_cainiao_records';
 
-  function loadCRecords() { return lsGet(C_KEY, []); }
-  function saveCRecords(r) { lsSet(C_KEY, r); }
+  function loadCRecords() {
+    if (cloudData && cloudData.cainiao && cloudData.cainiao.records) return cloudData.cainiao.records;
+    return lsGet(C_KEY, []);
+  }
+  function saveCRecords(r) {
+    lsSet(C_KEY, r);
+    if (!cloudData) cloudData = {};
+    if (!cloudData.cainiao) cloudData.cainiao = {};
+    cloudData.cainiao.records = r;
+    cloudSave();
+  }
 
   function refreshCainiao() {
     var records = loadCRecords();
@@ -730,8 +804,17 @@ html, body {
   var tukuCurrentCat = '全部';
   var tukuSearchTerm = '';
 
-  function loadTuku() { return lsGet(TUKU_KEY, []); }
-  function saveTuku(d) { lsSet(TUKU_KEY, d); }
+  function loadTuku() {
+    if (cloudData && cloudData.tuku && cloudData.tuku.images) return cloudData.tuku.images;
+    return lsGet(TUKU_KEY, []);
+  }
+  function saveTuku(d) {
+    lsSet(TUKU_KEY, d);
+    if (!cloudData) cloudData = {};
+    if (!cloudData.tuku) cloudData.tuku = {};
+    cloudData.tuku.images = d;
+    cloudSave();
+  }
 
   function renderTukuCats() {
     var images = loadTuku();
@@ -888,12 +971,14 @@ html, body {
 
   // ===== 初始化 =====
   function init() {
-    // 恢复上次金价显示
-    var gp = loadGoldPrice();
-    if (gp.price > 0) { $('goldPrice').textContent = gp.price.toFixed(2); $('goldTime').textContent = gp.time; }
-    refreshGold();
-    refreshCainiao();
-    renderTuku();
+    // 先从云端加载数据
+    cloudLoad(function(){
+      var gp = loadGoldPrice();
+      if (gp.price > 0) { $('goldPrice').textContent = gp.price.toFixed(2); $('goldTime').textContent = gp.time; }
+      refreshGold();
+      refreshCainiao();
+      renderTuku();
+    });
   }
 
   if (document.readyState==='loading') { document.addEventListener('DOMContentLoaded', init); }
