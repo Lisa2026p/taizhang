@@ -163,6 +163,9 @@ html, body {
         <button class="user-badge" id="btnUserCainiao">
           <span class="user-icon">🐦</span><span class="user-name">菜鸟</span>
         </button>
+        <button class="user-badge" id="btnUserTuku">
+          <span>🖼️</span><span>图库</span>
+        </button>
       </div>
     </header>
 
@@ -266,6 +269,47 @@ html, body {
       </div>
     </div>
 
+    <!-- ==================== 图库：图片管理 ==================== -->
+    <div id="viewTuku" class="user-view">
+      <section style="margin:12px 16px;display:flex;gap:8px">
+        <input type="text" id="tukuSearch" placeholder="搜索图片标签..." style="flex:1;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--card-bg);color:var(--text);font-size:14px;outline:none">
+        <button id="tukuSearchBtn" style="padding:12px 16px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:14px;cursor:pointer">搜索</button>
+      </section>
+      <section style="margin:0 16px 12px;display:flex;gap:8px;flex-wrap:wrap" id="tukuCats">
+        <button class="tuku-cat active" data-cat="全部" style="padding:6px 14px;border:1px solid var(--primary);border-radius:20px;background:var(--primary);color:#fff;font-size:13px;cursor:pointer">全部</button>
+        <button class="tuku-cat" data-cat="证件" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">证件</button>
+        <button class="tuku-cat" data-cat="合同" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">合同</button>
+        <button class="tuku-cat" data-cat="票据" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">票据</button>
+        <button class="tuku-cat" data-cat="截图" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">截图</button>
+        <button class="tuku-cat" data-cat="其他" style="padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--card-bg);color:var(--text-dim);font-size:13px;cursor:pointer">其他</button>
+      </section>
+      <div id="tukuGrid" style="margin:0 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-bottom:80px"></div>
+      <button class="fab" id="btnUploadImg">+</button>
+      <input type="file" id="tukuFileInput" accept="image/*" style="display:none">
+      <!-- 图片上传弹窗 -->
+      <div class="modal-overlay" id="tukuModal">
+        <div class="modal">
+          <div class="modal-header"><h3>上传图片</h3><button class="modal-close" id="tukuModalClose">×</button></div>
+          <div class="modal-body">
+            <div id="tukuPreview" style="width:100%;height:150px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:14px;margin-bottom:12px;border:2px dashed var(--border)">选择图片后预览</div>
+            <div class="form-row"><label>分类</label><select id="tukuCatSelect" class="form-input"><option>证件</option><option>合同</option><option>票据</option><option>截图</option><option>其他</option></select></div>
+            <div class="form-row"><label>标签(逗号分隔)</label><input type="text" id="tukuTags" class="form-input" placeholder="如 身份证,正面,2024"></div>
+            <div class="form-row"><label>备注</label><input type="text" id="tukuNote" class="form-input" placeholder="可选"></div>
+          </div>
+          <div class="modal-footer"><button class="btn-cancel" id="tukuBtnCancel">取消</button><button class="btn-primary" id="tukuBtnSave">上传</button></div>
+        </div>
+      </div>
+      <!-- 大图预览 -->
+      <div class="modal-overlay" id="tukuViewer">
+        <div style="position:relative;width:100%;max-width:480px;background:#000;padding:20px;border-radius:20px 20px 0 0;display:flex;flex-direction:column;align-items:center">
+          <button id="tukuViewerClose" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#fff;font-size:24px;cursor:pointer">×</button>
+          <img id="tukuViewerImg" style="max-width:100%;max-height:70vh;border-radius:8px;margin-top:20px">
+          <div id="tukuViewerInfo" style="color:#ccc;font-size:13px;margin-top:12px;text-align:center"></div>
+          <button id="tukuViewerDel" style="margin-top:16px;padding:12px 40px;border:1px solid var(--red);border-radius:10px;background:none;color:var(--red);font-size:15px;cursor:pointer">🗑 删除此图片</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ==================== 弹窗：黄金交易 ==================== -->
     <div class="modal-overlay" id="goldModal">
       <div class="modal">
@@ -323,15 +367,19 @@ html, body {
     currentUser = user;
     $('btnUserZhuzhu').classList.toggle('active', user==='zhuzhu');
     $('btnUserCainiao').classList.toggle('active', user==='cainiao');
-    $('logoSub').textContent = user==='zhuzhu' ? '珠珠 · 黄金交易' : '菜鸟 · 账目记录';
+    $('btnUserTuku').classList.toggle('active', user==='tuku');
+    $('logoSub').textContent = user==='zhuzhu' ? '珠珠 · 黄金交易' : (user==='cainiao' ? '菜鸟 · 账目记录' : '图库 · 图片管理');
     $('viewZhuzhu').classList.toggle('active', user==='zhuzhu');
     $('viewCainiao').classList.toggle('active', user==='cainiao');
+    $('viewTuku').classList.toggle('active', user==='tuku');
     if (user==='zhuzhu') refreshGold();
-    else refreshCainiao();
+    else if (user==='cainiao') refreshCainiao();
+    else if (user==='tuku') renderTuku();
   }
 
   $('btnUserZhuzhu').addEventListener('click', function(){switchUser('zhuzhu')});
   $('btnUserCainiao').addEventListener('click', function(){switchUser('cainiao')});
+  $('btnUserTuku').addEventListener('click', function(){switchUser('tuku')});
 
   // ===== 本地存储辅助 =====
   function lsGet(key, def) {
@@ -683,6 +731,147 @@ html, body {
     r.readAsText(f); e.target.value='';
   });
 
+  // ==================== 图库：图片管理 ====================
+  var TUKU_KEY = 'taizhang_tuku_images';
+  var tukuCurrentCat = '全部';
+  var tukuSearchTerm = '';
+
+  function loadTuku() { return lsGet(TUKU_KEY, []); }
+  function saveTuku(d) { lsSet(TUKU_KEY, d); }
+
+  function renderTuku() {
+    var images = loadTuku();
+    var grid = $('tukuGrid');
+    // 筛选
+    if (tukuCurrentCat !== '全部') images = images.filter(function(x){return x.cat===tukuCurrentCat});
+    if (tukuSearchTerm) {
+      var s = tukuSearchTerm.toLowerCase();
+      images = images.filter(function(x){
+        return (x.tags||'').toLowerCase().indexOf(s)>=0 || (x.note||'').toLowerCase().indexOf(s)>=0 || (x.cat||'').toLowerCase().indexOf(s)>=0;
+      });
+    }
+    if (images.length===0) { grid.innerHTML='<div class="empty-state" style="grid-column:span 3">暂无图片</div>'; return; }
+    grid.innerHTML='';
+    images.slice().reverse().forEach(function(img){
+      var item = document.createElement('div');
+      item.style.cssText='background:var(--card-bg);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;position:relative';
+      item.innerHTML='<div style="width:100%;padding-top:100%;position:relative;overflow:hidden"><img src="'+img.url+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.src=\\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23ddd%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2212%22>加载失败</text></svg>\\'"></div><div style="padding:6px 8px;font-size:11px;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+img.cat+'</div>';
+      item.addEventListener('click', function(){ viewTuku(img); });
+      grid.appendChild(item);
+    });
+  }
+
+  function viewTuku(img) {
+    $('tukuViewerImg').src = img.url;
+    $('tukuViewerInfo').textContent = (img.cat||'') + ' | ' + (img.tags||'') + (img.note?' | '+img.note:'') + ' | ' + (img.time||'');
+    $('tukuViewer').classList.add('show');
+    $('tukuViewerDel').dataset.id = img.id;
+  }
+
+  // 上传弹窗
+  (function(){
+    var overlay = $('tukuModal');
+    var fileInput = $('tukuFileInput');
+    var selectedFile = null;
+
+    $('btnUploadImg').addEventListener('click', function(){
+      selectedFile = null;
+      $('tukuPreview').innerHTML = '选择图片后预览';
+      $('tukuPreview').style.backgroundImage = '';
+      $('tukuCatSelect').value = '其他';
+      $('tukuTags').value = '';
+      $('tukuNote').value = '';
+      overlay.classList.add('show');
+    });
+    $('tukuModalClose').addEventListener('click', function(){overlay.classList.remove('show')});
+    $('tukuBtnCancel').addEventListener('click', function(){overlay.classList.remove('show')});
+
+    $('tukuPreview').addEventListener('click', function(){ fileInput.click(); });
+    fileInput.addEventListener('change', function(e){
+      var f = e.target.files[0];
+      if (!f) return;
+      selectedFile = f;
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        $('tukuPreview').innerHTML = '';
+        $('tukuPreview').style.backgroundImage = 'url('+ev.target.result+')';
+        $('tukuPreview').style.backgroundSize = 'contain';
+        $('tukuPreview').style.backgroundRepeat = 'no-repeat';
+        $('tukuPreview').style.backgroundPosition = 'center';
+      };
+      reader.readAsDataURL(f);
+    });
+
+    $('tukuBtnSave').addEventListener('click', function(){
+      if (!selectedFile) { alert('请先选择图片'); return; }
+      $('tukuBtnSave').textContent = '上传中...';
+      $('tukuBtnSave').disabled = true;
+
+      var formData = new FormData();
+      formData.append('smfile', selectedFile);
+      formData.append('format', 'json');
+
+      fetch('https://sm.ms/api/v2/upload', {method:'POST',body:formData})
+        .then(function(r){return r.json()})
+        .then(function(d){
+          $('tukuBtnSave').textContent = '上传';
+          $('tukuBtnSave').disabled = false;
+          if (d.success && d.data && d.data.url) {
+            var images = loadTuku();
+            var cat = $('tukuCatSelect').value;
+            var tags = $('tukuTags').value.trim();
+            var note = $('tukuNote').value.trim();
+            var now = new Date();
+            var timeStr = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate();
+            images.push({id:Date.now(), url:d.data.url, thumb:d.data.url, cat:cat, tags:tags, note:note, time:timeStr});
+            saveTuku(images);
+            overlay.classList.remove('show');
+            renderTuku();
+          } else {
+            alert('上传失败: '+(d.message||'未知错误'));
+          }
+        })
+        .catch(function(){
+          $('tukuBtnSave').textContent = '上传';
+          $('tukuBtnSave').disabled = false;
+          alert('上传失败,请检查网络');
+        });
+    });
+
+    overlay.addEventListener('click', function(e){if(e.target===overlay)overlay.classList.remove('show')});
+  })();
+
+  // 大图预览
+  $('tukuViewerClose').addEventListener('click', function(){$('tukuViewer').classList.remove('show')});
+  $('tukuViewer').addEventListener('click', function(e){if(e.target===$('tukuViewer'))$('tukuViewer').classList.remove('show')});
+  $('tukuViewerDel').addEventListener('click', function(){
+    var id = parseInt(this.dataset.id);
+    if (confirm('确定删除?')) {
+      var images = loadTuku().filter(function(x){return x.id!==id});
+      saveTuku(images); renderTuku(); $('tukuViewer').classList.remove('show');
+    }
+  });
+
+  // 分类筛选
+  $('tukuCats').addEventListener('click', function(e){
+    if (e.target.classList.contains('tuku-cat')) {
+      tukuCurrentCat = e.target.dataset.cat;
+      var cats = document.querySelectorAll('.tuku-cat');
+      cats.forEach(function(c){c.classList.remove('active');c.style.background='var(--card-bg)';c.style.color='var(--text-dim)';c.style.borderColor='var(--border)'});
+      e.target.classList.add('active');e.target.style.background='var(--primary)';e.target.style.color='#fff';e.target.style.borderColor='var(--primary)';
+      renderTuku();
+    }
+  });
+
+  // 搜索
+  $('tukuSearchBtn').addEventListener('click', function(){
+    tukuSearchTerm = $('tukuSearch').value.trim();
+    renderTuku();
+  });
+  $('tukuSearch').addEventListener('keypress', function(e){
+    if (e.key==='Enter') { tukuSearchTerm = this.value.trim(); renderTuku(); }
+  });
+
   // ===== 初始化 =====
   function init() {
     // 恢复上次金价显示
@@ -690,6 +879,7 @@ html, body {
     if (gp.price > 0) { $('goldPrice').textContent = gp.price.toFixed(2); $('goldTime').textContent = gp.time; }
     refreshGold();
     refreshCainiao();
+    renderTuku();
   }
 
   if (document.readyState==='loading') { document.addEventListener('DOMContentLoaded', init); }
