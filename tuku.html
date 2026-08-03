@@ -281,38 +281,31 @@ html, body {
 
     $('tukuBtnSave').addEventListener('click', function(){
       if (!selectedFile) { alert('请先选择图片'); return; }
-      $('tukuBtnSave').textContent = '上传中...';
+      $('tukuBtnSave').textContent = '处理中...';
       $('tukuBtnSave').disabled = true;
 
-      var formData = new FormData();
-      formData.append('smfile', selectedFile);
-      formData.append('format', 'json');
-
-      fetch('https://sm.ms/api/v2/upload', {method:'POST',body:formData})
-        .then(function(r){return r.json()})
-        .then(function(d){
-          $('tukuBtnSave').textContent = '上传';
-          $('tukuBtnSave').disabled = false;
-          if (d.success && d.data && d.data.url) {
-            var images = loadImages();
-            var cat = $('tukuCatSelect').value.trim();
-            var tags = $('tukuTags').value.trim();
-            var note = $('tukuNote').value.trim();
-            var now = new Date();
-            var timeStr = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate();
-            images.push({id:Date.now(), url:d.data.url, cat:cat, tags:tags, note:note, time:timeStr});
-            saveImages(images);
-            overlay.classList.remove('show');
-            renderGrid();
-          } else {
-            alert('上传失败: '+(d.message||'未知错误'));
-          }
-        })
-        .catch(function(){
-          $('tukuBtnSave').textContent = '上传';
-          $('tukuBtnSave').disabled = false;
-          alert('上传失败，请检查网络');
-        });
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        // 图片转 base64，直接存储
+        var images = loadImages();
+        var cat = $('tukuCatSelect').value.trim();
+        var tags = $('tukuTags').value.trim();
+        var note = $('tukuNote').value.trim();
+        var now = new Date();
+        var timeStr = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate();
+        images.push({id:Date.now(), url:ev.target.result, cat:cat, tags:tags, note:note, time:timeStr});
+        saveImages(images);
+        $('tukuBtnSave').textContent = '上传';
+        $('tukuBtnSave').disabled = false;
+        overlay.classList.remove('show');
+        renderGrid();
+      };
+      reader.onerror = function(){
+        $('tukuBtnSave').textContent = '上传';
+        $('tukuBtnSave').disabled = false;
+        alert('读取图片失败');
+      };
+      reader.readAsDataURL(selectedFile);
     });
   })();
 
