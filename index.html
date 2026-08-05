@@ -157,7 +157,7 @@ html, body {
           <div class="ov-item"><div class="ov-label">总克重</div><div class="ov-value orange" id="ovTotalWeight">0g</div></div>
           <div class="ov-item"><div class="ov-label">总成本</div><div class="ov-value blue" id="ovTotalCost">¥0.00</div></div>
           <div class="ov-item"><div class="ov-label">总利润</div><div class="ov-value green" id="ovTotalProfit">+¥0.00</div></div>
-          <div class="ov-item"><div class="ov-label">利润率</div><div class="ov-value green" id="ovProfitRate">+0.00%</div></div>
+          <div class="ov-item"><div class="ov-label">实付克价</div><div class="ov-value dark" id="ovProfitRate">¥0.00/g</div></div>
         </div>
       </section>
       <section class="trade-section">
@@ -269,7 +269,7 @@ html, body {
   function fmtDate(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
   function fmtMoney(n) { return '¥'+(Math.round(n*100)/100).toFixed(2); }
   function fmtWeight(n) { return (Math.round(n*1000)/1000).toFixed(3)+'g'; }
-  function fmtPercent(n) { var s=n>=0?'+':''; return s+(Math.round(n*100)/100).toFixed(2)+'%'; }
+  function fmtPricePerGram(n) { return '¥'+(Math.round(n*100)/100).toFixed(2)+'/g'; }
 
   // ===== 用户切换 =====
   var currentUser = 'zhuzhu';
@@ -424,11 +424,17 @@ html, body {
     if (cp > 0) { $('goldPrice').textContent = cp.toFixed(2); $('goldTime').textContent = gp.time; }
     var tw=0, tc=0;
     trades.forEach(function(t){ tw+=t.weight; tc+=t.costPrice; });
-    var tv = tw*cp, profit = tv-tc, rate = tc>0 ? (profit/tc)*100 : 0;
+    var tv = tw*cp, profit = tv-tc;
+    // 实付克价 = 总成本 ÷ 总克重
+    var avgCost = tw > 0 ? tc / tw : 0;
     $('ovTotalWeight').textContent = fmtWeight(tw);
     $('ovTotalCost').textContent = fmtMoney(tc);
     var pe = $('ovTotalProfit'); pe.textContent = (profit>=0?'+':'')+fmtMoney(profit); pe.className = 'ov-value '+(profit>=0?'green':'red');
-    var re = $('ovProfitRate'); re.textContent = fmtPercent(rate); re.className = 'ov-value '+(rate>=0?'green':'red');
+    var re = $('ovProfitRate'); re.textContent = fmtPricePerGram(avgCost);
+    if (avgCost === 0) { re.className = 'ov-value dark'; }
+    else if (cp > 0 && avgCost < cp) { re.className = 'ov-value green'; }
+    else if (cp > 0 && avgCost > cp) { re.className = 'ov-value red'; }
+    else { re.className = 'ov-value dark'; }
 
     var list = $('tradeList');
     if (trades.length===0) {
