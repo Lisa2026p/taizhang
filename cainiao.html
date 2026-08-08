@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1e3a5f">
+<title>菜鸟账本</title>
+<style>
+:root{--bg:#f5f5f7;--card:#fff;--primary:#3b82f6;--text:#1f2937;--dim:#6b7280;--light:#9ca3af;--border:#e5e7eb;--blue:#3b82f6;--orange:#f59e0b;--green:#10b981;--red:#ef4444;--radius:16px;--shadow:0 2px 12px rgba(0,0,0,0.06)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+#app{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:100px}
+.header{background:linear-gradient(135deg,#1e3a5f,#2d5a87);padding:14px 16px;position:sticky;top:0;z-index:100}
+.logo-title{font-size:17px;font-weight:700;color:#fff}
+.logo-sub{font-size:11px;color:rgba(255,255,255,0.6)}
+.card{background:var(--card);margin:12px 16px;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.section-title{font-size:14px;font-weight:600;margin-bottom:14px}
+.overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ov-item{text-align:center}
+.ov-label{font-size:12px;color:var(--dim);margin-bottom:4px}
+.ov-value{font-size:22px;font-weight:700}
+.ov-value.blue{color:var(--blue)}.ov-value.orange{color:var(--orange)}.ov-value.dark{color:var(--text)}
+.tab-bar{display:flex;background:var(--card);margin:0 16px 12px;border-radius:12px;padding:4px;box-shadow:var(--shadow);gap:4px}
+.tab{flex:1;padding:10px 4px;border:none;border-radius:8px;background:none;color:var(--dim);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.tab.active{background:var(--primary);color:#fff}
+.c-panel{display:none;margin:0 16px}
+.c-panel.active{display:block}
+.data-table{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.dt-header{display:grid;grid-template-columns:1fr 60px 90px;padding:12px 16px;background:#f9fafb;border-bottom:1px solid var(--border);font-size:13px;color:var(--dim);font-weight:500}
+.dt-header span:last-child,.dt-row span:last-child,.dt-footer span:last-child{text-align:right}
+.dt-header span:nth-child(2),.dt-row span:nth-child(2),.dt-footer span:nth-child(2){text-align:center}
+.dt-body{max-height:55vh;overflow-y:auto}
+.dt-row{display:grid;grid-template-columns:1fr 60px 90px;padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px;align-items:center}
+.dt-row:last-child{border-bottom:none}
+.dt-footer{display:grid;grid-template-columns:1fr 60px 90px;padding:14px 16px;background:#f9fafb;border-top:2px solid var(--primary);font-size:14px;font-weight:600}
+.record-card{background:var(--card);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);margin-bottom:8px}
+.record-top{display:flex;justify-content:space-between;align-items:center}
+.record-info{flex:1}
+.record-date{font-size:12px;color:var(--light);margin-bottom:2px}
+.record-detail{font-size:14px}
+.record-detail .tag{display:inline-block;padding:2px 8px;border-radius:4px;background:#eff6ff;color:var(--primary);font-size:12px;margin-right:6px}
+.record-amount{font-size:18px;font-weight:700}
+.record-actions{display:flex;gap:8px;margin-top:10px}
+.btn-edit{flex:1;padding:10px;border:1px solid var(--primary);border-radius:8px;background:#eff6ff;color:var(--primary);font-size:15px;cursor:pointer;font-family:inherit}
+.btn-del{flex:1;padding:10px;border:1px solid var(--red);border-radius:8px;background:#fef2f2;color:var(--red);font-size:15px;cursor:pointer;font-family:inherit}
+.fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border:none;border-radius:50%;background:var(--primary);color:#fff;font-size:28px;cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,0.4);z-index:90;display:flex;align-items:center;justify-content:center}
+.fab:active{transform:scale(.95);background:#2563eb}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;animation:slideUp .3s}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-header h3{font-size:17px;font-weight:600}
+.modal-close{width:32px;height:32px;border:none;border-radius:50%;background:var(--bg);color:var(--dim);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:13px;color:var(--dim);margin-bottom:6px}
+.form-input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:15px;outline:none;-webkit-appearance:none;font-family:inherit}
+.form-input:focus{border-color:var(--primary)}
+.modal-footer{display:flex;gap:10px;margin-top:8px}
+.btn-primary{padding:12px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:15px;font-weight:600;cursor:pointer;flex:1;font-family:inherit}
+.btn-cancel{padding:12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--dim);font-size:15px;cursor:pointer;flex:1;font-family:inherit}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.section-header h3{font-size:15px;font-weight:600}
+.btn-sm{padding:6px 12px;border:1px solid var(--primary);border-radius:8px;background:#fff;color:var(--primary);font-size:13px;cursor:pointer;font-family:inherit}
+.btn-sm:active{background:#eff6ff}
+.empty{text-align:center;padding:60px 20px;color:var(--light);font-size:14px}
+.footer{text-align:center;padding:16px;font-size:11px;color:var(--light)}
+.dropdown{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.12);z-index:300;max-height:180px;overflow-y:auto;margin-top:2px}
+.dropdown.show{display:block}
+.dropdown-item{padding:12px 14px;font-size:15px;cursor:pointer;border-bottom:1px solid var(--border)}
+.dropdown-item:last-child{border-bottom:none}
+.dropdown-item:active{background:var(--primary);color:#fff}
+.dropdown-item.add-new{color:var(--primary);font-weight:600}
+</style>
+<script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
+<script>
+(function(){
+  try{
+    var beacon=new BeaconAction({
+      appkey:'0WEB06U85YBSLJNL',
+      versionCode:'1.0.0',
+      channelID:'share',
+      delay:1000,
+      sessionDuration:30*60*1000,
+      isOversea:false,
+      needReportRqdEvent:false
+    });
+    beacon.onDirectUserAction('preview_page_view',{
+      'url':location.href,
+      'referrer':document.referrer,
+      'title':document.title,
+      'sandbox_id':'cb5ae4697cdd4c0aa5668f44a341a04b'
+    });
+  }catch(e){}
+})();
+</script></head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="logo-title">🐦 菜鸟账本</div>
+    <div class="logo-sub">本地记录 · 永不丢失</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">📈 总览</div>
+    <div class="overview-grid">
+      <div class="ov-item"><div class="ov-label">总金额</div><div class="ov-value blue" id="ovTotal">¥0.00</div></div>
+      <div class="ov-item"><div class="ov-label">总笔数</div><div class="ov-value dark" id="ovCount">0</div></div>
+      <div class="ov-item"><div class="ov-label">账号数</div><div class="ov-value orange" id="ovAcct">0</div></div>
+      <div class="ov-item"><div class="ov-label">项目数</div><div class="ov-value dark" id="ovProj">0</div></div>
+    </div>
+  </div>
+
+  <nav class="tab-bar">
+    <button class="tab active" data-tab="byDate">📅 按日期</button>
+    <button class="tab" data-tab="byAccount">👥 按账号</button>
+    <button class="tab" data-tab="byProject">📁 按项目</button>
+    <button class="tab" data-tab="records">📋 记录</button>
+  </nav>
+
+  <div class="c-panel active" id="byDate">
+    <div class="data-table">
+      <div class="dt-header"><span>日期</span><span>笔数</span><span>金额</span></div>
+      <div class="dt-body" id="dateBody"></div>
+      <div class="dt-footer"><span>合计</span><span id="dateCount">0</span><span id="dateAmount">¥0.00</span></div>
+    </div>
+  </div>
+
+  <div class="c-panel" id="byAccount">
+    <div class="data-table">
+      <div class="dt-header"><span>账号</span><span>笔数</span><span>金额</span></div>
+      <div class="dt-body" id="acctBody"></div>
+      <div class="dt-footer"><span>合计</span><span id="acctCount">0</span><span id="acctAmount">¥0.00</span></div>
+    </div>
+  </div>
+
+  <div class="c-panel" id="byProject">
+    <div class="data-table">
+      <div class="dt-header"><span>项目</span><span>笔数</span><span>金额</span></div>
+      <div class="dt-body" id="projBody"></div>
+      <div class="dt-footer"><span>合计</span><span id="projCount">0</span><span id="projAmount">¥0.00</span></div>
+    </div>
+  </div>
+
+  <div class="c-panel" id="records">
+    <div class="section-header">
+      <h3>📋 所有记录</h3>
+      <div style="display:flex;gap:6px">
+        <button class="btn-sm" id="btnExport">导出</button>
+        <button class="btn-sm" id="btnImport">导入</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
+      </div>
+    </div>
+    <div id="recordsList"></div>
+  </div>
+
+  <div class="footer">菜鸟账本 · 数据保存在手机本地</div>
+</div>
+
+<button class="fab" id="btnAdd">+</button>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modalTitle">新增记录</h3><button class="modal-close" id="modalClose">×</button></div>
+    <div class="form-row"><label>日期</label><input type="date" id="fDate" class="form-input"></div>
+    <div class="form-row"><label>账号</label><div style="position:relative"><input type="text" id="fAccount" class="form-input" placeholder="输入或选择" autocomplete="off"><div class="dropdown" id="acctDropdown"></div></div></div>
+    <div class="form-row"><label>项目</label><div style="position:relative"><input type="text" id="fProject" class="form-input" placeholder="输入或选择" autocomplete="off"><div class="dropdown" id="projDropdown"></div></div></div>
+    <div class="form-row"><label>金额 (元)</label><input type="number" id="fAmount" class="form-input" placeholder="如 80.00" step="0.01"></div>
+    <div class="form-row"><label>备注</label><input type="text" id="fNote" class="form-input" placeholder="可选"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="btnCancel">取消</button>
+      <button class="btn-primary" id="btnSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var pad=function(n){return n<10?'0'+n:''+n};
+var fmtDate=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var fmtMoney=function(n){return '¥'+(Math.round(n*100)/100).toFixed(2)};
+
+var KEY='cainiao_records';
+var DB_NAME='cainiao_db',STORE='records';
+var editingId=null;
+
+// 使用 IndexedDB 做永久存储（手机不会清理）
+var db=null;
+function openDB(cb){
+  var req=indexedDB.open(DB_NAME,1);
+  req.onupgradeneeded=function(e){e.target.result.createObjectStore(STORE,{keyPath:'id'})};
+  req.onsuccess=function(e){db=e.target.result;cb()};
+  req.onerror=function(){cb()};
+}
+function loadDB(cb){
+  if(!db){cb([]);return}
+  var tx=db.transaction(STORE,'readonly'),store=tx.objectStore(STORE),all=store.getAll();
+  all.onsuccess=function(){cb(all.result||[])}
+  all.onerror=function(){cb([])}
+}
+function saveDB(records){
+  if(!db)return;
+  var tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE);
+  store.clear();
+  records.forEach(function(r){store.put(r)});
+}
+
+function load(){
+  // 优先从 IndexedDB 读取（更可靠）
+  var r=localStorage.getItem(KEY);
+  return r?JSON.parse(r):[];
+}
+function save(r){
+  localStorage.setItem(KEY,JSON.stringify(r));
+  saveDB(r);
+}
+
+// 从 IndexedDB 恢复数据到 localStorage
+function restoreFromDB(){
+  loadDB(function(records){
+    if(records.length>0){
+      save(records);
+      render();
+      alert('已恢复 '+records.length+' 条记录！');
+    }else{
+      alert('没有可恢复的数据');
+    }
+  });
+}
+
+// 下拉选择逻辑
+function getOptions(type){
+  var records=load(),map={};
+  records.forEach(function(r){if(type==='acct')map[r.account]=true;else map[r.project]=true});
+  return Object.keys(map).sort();
+}
+function showDropdown(type){
+  var dd=$(type+'Dropdown');
+  var options=getOptions(type);
+  if(options.length===0){dd.classList.remove('show');return}
+  renderDropdown(type,options);
+  dd.classList.add('show');
+}
+function filterDropdown(type){
+  var input=$(type==='acct'?'fAccount':'fProject');
+  var dd=$(type+'Dropdown');
+  var all=getOptions(type);
+  var val=input.value.trim().toLowerCase();
+  var filtered=val?all.filter(function(o){return o.toLowerCase().indexOf(val)!==-1}):all;
+  if(val&&all.indexOf(val)===-1&&val.length>0)filtered.push('__new__');
+  renderDropdown(type,filtered);
+  dd.classList.add('show');
+}
+function renderDropdown(type,options){
+  var dd=$(type+'Dropdown');
+  dd.innerHTML=options.map(function(o){
+    if(o==='__new__'){
+      var val=$(type==='acct'?'fAccount':'fProject').value.trim();
+      return '<div class="dropdown-item add-new" data-val="'+val+'">➕ 新建 "'+val+'"</div>';
+    }
+    return '<div class="dropdown-item" data-val="'+o+'">'+o+'</div>';
+  }).join('');
+  dd.querySelectorAll('.dropdown-item').forEach(function(item){
+    item.addEventListener('touchend',function(e){
+      e.preventDefault();e.stopPropagation();
+      $(type==='acct'?'fAccount':'fProject').value=this.dataset.val;
+      hideDropdown(type);
+      $(type==='acct'?'fAccount':'fProject').focus();
+    });
+    item.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+    });
+  });
+}
+function hideDropdown(type){
+  setTimeout(function(){$(type+'Dropdown').classList.remove('show')},150);
+}
+
+function render(){
+  var records=load();
+  var total=0,accts={},projs={};
+  records.forEach(function(r){total+=r.amount;accts[r.account]=true;projs[r.project]=true});
+
+  $('ovTotal').textContent=fmtMoney(total);
+  $('ovCount').textContent=records.length;
+  $('ovAcct').textContent=Object.keys(accts).length;
+  $('ovProj').textContent=Object.keys(projs).length;
+
+  renderByDate(records);
+  renderByAccount(records);
+  renderByProject(records);
+  renderRecords(records);
+}
+
+function renderByDate(records){
+  var g={},body=$('dateBody'),tc=0,ta=0;
+  records.forEach(function(r){if(!g[r.date])g[r.date]={c:0,a:0};g[r.date].c++;g[r.date].a+=r.amount});
+  var dates=Object.keys(g).sort().reverse();
+  body.innerHTML=dates.length===0?'<div class="empty">暂无记录</div>':'';
+  dates.forEach(function(d){var v=g[d];tc+=v.c;ta+=v.a;
+    var row=document.createElement('div');row.className='dt-row';
+    row.innerHTML='<span>'+d+'</span><span>'+v.c+'</span><span>'+fmtMoney(v.a)+'</span>';
+    body.appendChild(row);
+  });
+  $('dateCount').textContent=tc;$('dateAmount').textContent=fmtMoney(ta);
+}
+
+function renderByAccount(records){
+  var g={},body=$('acctBody'),tc=0,ta=0;
+  records.forEach(function(r){if(!g[r.account])g[r.account]={c:0,a:0};g[r.account].c++;g[r.account].a+=r.amount});
+  var accts=Object.keys(g).sort();
+  body.innerHTML=accts.length===0?'<div class="empty">暂无记录</div>':'';
+  accts.forEach(function(a){var v=g[a];tc+=v.c;ta+=v.a;
+    var row=document.createElement('div');row.className='dt-row';
+    row.innerHTML='<span>'+a+'</span><span>'+v.c+'</span><span>'+fmtMoney(v.a)+'</span>';
+    body.appendChild(row);
+  });
+  $('acctCount').textContent=tc;$('acctAmount').textContent=fmtMoney(ta);
+}
+
+function renderByProject(records){
+  var g={},body=$('projBody'),tc=0,ta=0;
+  records.forEach(function(r){if(!g[r.project])g[r.project]={c:0,a:0};g[r.project].c++;g[r.project].a+=r.amount});
+  var ps=Object.keys(g).sort();
+  body.innerHTML=ps.length===0?'<div class="empty">暂无记录</div>':'';
+  ps.forEach(function(p){var v=g[p];tc+=v.c;ta+=v.a;
+    var row=document.createElement('div');row.className='dt-row';
+    row.innerHTML='<span>'+p+'</span><span>'+v.c+'</span><span>'+fmtMoney(v.a)+'</span>';
+    body.appendChild(row);
+  });
+  $('projCount').textContent=tc;$('projAmount').textContent=fmtMoney(ta);
+}
+
+function renderRecords(records){
+  var list=$('recordsList');
+  if(records.length===0){list.innerHTML='<div class="empty">暂无记录，点右下角 + 添加</div>';return}
+  list.innerHTML='';
+  records.slice().reverse().forEach(function(r){
+    var div=document.createElement('div');div.className='record-card';
+    div.innerHTML='<div class="record-top">'+
+      '<div class="record-info"><div class="record-date">'+r.date+'</div>'+
+      '<div class="record-detail"><span class="tag">'+r.account+'</span><span class="tag">'+r.project+'</span>'+(r.note?'<span>'+r.note+'</span>':'')+'</div></div>'+
+      '<div class="record-amount">'+fmtMoney(r.amount)+'</div></div>'+
+      '<div class="record-actions">'+
+      '<button class="btn-edit" data-id="'+r.id+'">✏️ 编辑</button>'+
+      '<button class="btn-del" data-id="'+r.id+'">🗑 删除</button></div>';
+    list.appendChild(div);
+  });
+}
+
+// 标签切换
+document.querySelectorAll('.tab').forEach(function(tab){
+  tab.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+    document.querySelectorAll('.c-panel').forEach(function(p){p.classList.remove('active')});
+    this.classList.add('active');
+    $(this.dataset.tab).classList.add('active');
+  });
+});
+
+// 弹窗
+var overlay=$('modal');
+$('btnAdd').addEventListener('click',function(){
+  editingId=null;
+  $('modalTitle').textContent='新增记录';
+  $('fDate').value=fmtDate(new Date());$('fAccount').value='';$('fProject').value='';$('fAmount').value='';$('fNote').value='';
+  overlay.classList.add('show');
+});
+$('modalClose').addEventListener('click',function(){overlay.classList.remove('show')});
+$('btnCancel').addEventListener('click',function(){overlay.classList.remove('show')});
+overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.classList.remove('show')});
+
+$('btnSave').addEventListener('click',function(){
+  try{
+    var d=$('fDate').value,a=$('fAccount').value.trim(),p=$('fProject').value.trim(),m=parseFloat($('fAmount').value),n=$('fNote').value.trim();
+    if(!d||!a||!p||isNaN(m)||m<=0){alert('请填写完整信息');return}
+    var records=load();
+    if(editingId!==null){
+      records=records.map(function(r){return r.id===editingId?{id:r.id,date:d,account:a,project:p,amount:m,note:n}:r});
+    }else{
+      records.push({id:Date.now(),date:d,account:a,project:p,amount:m,note:n});
+    }
+    save(records);
+    overlay.classList.remove('show');
+    render();
+  }catch(e){
+    alert('保存出错: '+e.message);
+  }
+});
+
+$('recordsList').addEventListener('click',function(e){
+  var id=parseInt(e.target.dataset.id);
+  if(!id)return;
+  if(e.target.classList.contains('btn-edit')){
+    var r=load().find(function(x){return x.id===id});
+    if(!r)return;
+    editingId=id;
+    $('modalTitle').textContent='编辑记录';
+    $('fDate').value=r.date;$('fAccount').value=r.account;$('fProject').value=r.project;$('fAmount').value=r.amount;$('fNote').value=r.note||'';
+    overlay.classList.add('show');
+  }else if(e.target.classList.contains('btn-del')){
+    if(confirm('确定删除？')){
+      var records=load().filter(function(r){return r.id!==id});
+      save(records);render();
+    }
+  }
+});
+
+// 导出导入
+$('btnExport').addEventListener('click',function(){
+  var r=load();if(r.length===0){alert('无数据');return}
+  var blob=new Blob([JSON.stringify({records:r},null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='菜鸟账本_'+fmtDate(new Date())+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+});
+$('btnImport').addEventListener('click',function(){$('importFile').click()});
+$('importFile').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var d=JSON.parse(ev.target.result);
+      if(!d.records||!Array.isArray(d.records))throw new Error();
+      save(d.records);render();alert('导入成功');
+    }catch(ex){alert('格式错误')}
+  };
+  reader.readAsText(f);e.target.value='';
+});
+
+// 账号/项目 下拉事件绑定
+function bindDropdown(type){
+  var input=$(type==='acct'?'fAccount':'fProject');
+  var dd=$(type+'Dropdown');
+  input.addEventListener('focus',function(){showDropdown(type)});
+  input.addEventListener('input',function(){filterDropdown(type)});
+  // 点击下拉外面才关闭（不影响保存按钮）
+  document.addEventListener('click',function(e){
+    if(e.target!==input&&!dd.contains(e.target)&&!e.target.classList.contains('btn-primary')&&!e.target.classList.contains('btn-cancel'))hideDropdown(type);
+  });
+}
+bindDropdown('acct');
+bindDropdown('proj');
+
+// 初始化：打开DB后，检查是否需要恢复
+openDB(function(){
+  var local=load();
+  if(local.length===0){
+    loadDB(function(records){
+      if(records.length>0){save(records)}
+      render();
+    });
+  }else{
+    render();
+  }
+});
+})();
+</script>
+</body>
+</html>
